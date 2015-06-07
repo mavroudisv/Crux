@@ -37,7 +37,7 @@ def listen_on_port(port, pub, priv):
 
 	print pub
 	
-	server = TCPServer(('127.0.0.1', port), TCPServerHandler)
+	server = TCPServer(('0.0.0.0', port), TCPServerHandler)
 	server.serve_forever()
 
 
