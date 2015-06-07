@@ -45,7 +45,7 @@ def groupKey(params, pubKeys=[]):
 
 
 
-def load(auths=[]):
+def load(auths=[], processor):
 	#global G
 	#global priv
 	#global pub
@@ -53,9 +53,16 @@ def load(auths=[]):
 	#priv = G.order().random()
 	#pub = priv * G.generator()
 	if ping_all_auths(auths, 8888):
-		listen_on_port(8888, pub, priv)	
+		print "All authorities are responsive"
 	else:
 		print "Not all authorities are responsive"
+
+	if ping(processor, 8888):
+		print "Processor is not responsive."
+	else:
+		print "Processor is not responsive."
+
+
 
 if __name__ == "__main__":
     load()
