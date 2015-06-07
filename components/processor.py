@@ -53,7 +53,7 @@ def load():
 	global priv
 	global pub
 	
-	auth_str = sys.argv[1]
+	auths_str = sys.argv[1]
 	auths = auths_str.split(' ')
 	
 	G = EcGroup(nid=713)

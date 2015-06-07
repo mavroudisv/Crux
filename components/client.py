@@ -29,7 +29,7 @@ def load():
 	#priv = G.order().random()
 	#pub = priv * G.generator()
 	
-	auth_str = sys.argv[1]
+	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
 	auths = auths_str.split(' ')
 	processors = processors_str.split(' ')
