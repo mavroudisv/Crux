@@ -3,15 +3,18 @@ import socket
 
 
 def ping(ip, port):
+	
+	try:
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, port))
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect((ip, port))
-
-	rand = random.randint(1, 99999)
-	data = {'request':'ping', 'contents': {'value':rand}}
-	s.send(json.dumps(data))
-	result = json.loads(s.recv(1024))
-	s.close()
+		rand = random.randint(1, 99999)
+		data = {'request':'ping', 'contents': {'value':rand}}
+		s.send(json.dumps(data))
+		result = json.loads(s.recv(1024))
+		s.close()
+	except Exception, e:	
+		print "Exception while pinging: ", e
 	
 	if result['return'] == rand:
 		return True
