@@ -5,8 +5,8 @@ from pprint import pprint
 #Setup a connection
 def setup_connection():
 	conn = boto.ec2.connect_to_region("us-west-2",
-	  aws_access_key_id='AKIAI4SGKM2K7LMTOA2Q',
-	  aws_secret_access_key='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')
+	  aws_access_key_id='AKIAJWODMSMSXUO6GA5A',
+	  aws_secret_access_key='gyCCcCXEfkL61UEv7QQFGmDyadnbEtyi2K1sN7M')
 	return conn
 
 
