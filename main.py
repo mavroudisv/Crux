@@ -13,7 +13,7 @@ from components import client, authority, processor
 
 
 
-instance_ids=['i-5dbc99ab', 'i-ddb4912b', 'i-cbb8933d']
+instance_ids=['i-cbb8933d']
 
 
 def all_have_value(value, dictionary):

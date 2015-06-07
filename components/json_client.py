@@ -25,7 +25,7 @@ data = cipher_obj.to_JSON()
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(('127.0.0.1', 8888))
+s.connect(('52.26.65.102', 8888))
 
 #pubkey
 data = {'request':'pubkey'}
