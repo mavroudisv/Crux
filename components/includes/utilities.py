@@ -1,4 +1,5 @@
 import SocketServer
+import socket
 
 
 def ping(ip, port):
