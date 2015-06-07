@@ -66,14 +66,14 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 	
 	
 		
-def load(auths=[]):
+def load():
 	global G
 	global priv
 	global pub
 	G = EcGroup(nid=713)
 	priv = G.order().random()
 	pub = priv * G.generator()
-	if ping_all_auths(auths, 8888):
+	if ping_all_auths(8888, auths):
 		listen_on_port(8888, pub, priv)	
 	else:
 		print "Not all authorities are responsive"

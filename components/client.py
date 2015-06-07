@@ -45,14 +45,14 @@ def groupKey(params, pubKeys=[]):
 
 
 
-def load(processor, auths=[]):
+def load():
 	#global G
 	#global priv
 	#global pub
 	#G = EcGroup(nid=713)
 	#priv = G.order().random()
 	#pub = priv * G.generator()
-	if ping_all_auths(auths, 8888):
+	if ping_all_auths(8888, auths):
 		print "All authorities are responsive"
 	else:
 		print "Not all authorities are responsive"
