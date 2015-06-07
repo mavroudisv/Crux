@@ -35,12 +35,12 @@ def load():
 	processors = processors_str.split(' ')
 	
 	
-	if multiping(8888, auths):
+	if utilities.multiping(8888, auths):
 		print "All authorities are responsive"
 	else:
 		print "Not all authorities are responsive"
 
-	if multiping(8888, processors):
+	if utilities.multiping(8888, processors):
 		print "Processor is not responsive."
 	else:
 		print "Processor is not responsive."
