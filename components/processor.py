@@ -3,33 +3,15 @@ import binascii
 
 import SocketServer
 import json
+import sys
+
+from includes import utilities
 
 G = None
 priv = None
 pub = None
 
-def ping(ip, port):
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect((ip, port))
-
-	rand = random.randint(1, 99999)
-	data = {'request':'ping', 'contents': {'value':rand}}
-	s.send(json.dumps(data))
-	result = json.loads(s.recv(1024))
-	s.close()
-	
-	if result['return'] == rand:
-		return True
-	else:
-		return False
-
-
-def ping_all_auths(port, auths=[]):
-	for a in auths:
-		if not ping(a, port):
-			return False
-	return True
 	
 	
 	
@@ -70,10 +52,14 @@ def load():
 	global G
 	global priv
 	global pub
+	
+	auth_str = sys.argv[1]
+	auths = auths_str.split(' ')
+	
 	G = EcGroup(nid=713)
 	priv = G.order().random()
 	pub = priv * G.generator()
-	if ping_all_auths(8888, auths):
+	if multipling(8888, auths):
 		listen_on_port(8888, pub, priv)	
 	else:
 		print "Not all authorities are responsive"

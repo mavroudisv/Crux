@@ -2,31 +2,7 @@ import socket
 import json
 import random
 
-
-
-def ping(ip, port):
-
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect((ip, port))
-
-	rand = random.randint(1, 99999)
-	data = {'request':'ping', 'contents': {'value':rand}}
-	s.send(json.dumps(data))
-	result = json.loads(s.recv(1024))
-	s.close()
-	
-	if result['return'] == rand:
-		return True
-	else:
-		return False
-
-def ping_all_auths(port, auths=[]):
-	for a in auths:
-		if not ping(a, port):
-			return False
-	return True
-	
-
+from includes import utilities
 
 def parse_csv():
 	pass
@@ -52,12 +28,19 @@ def load():
 	#G = EcGroup(nid=713)
 	#priv = G.order().random()
 	#pub = priv * G.generator()
-	if ping_all_auths(8888, auths):
+	
+	auth_str = sys.argv[1]
+	processors_str = sys.argv[2]
+	auths = auths_str.split(' ')
+	processors = processors_str.split(' ')
+	
+	
+	if multiping(8888, auths):
 		print "All authorities are responsive"
 	else:
 		print "Not all authorities are responsive"
 
-	if ping(processor, 8888):
+	if multiping(8888, processors):
 		print "Processor is not responsive."
 	else:
 		print "Processor is not responsive."
