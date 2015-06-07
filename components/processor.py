@@ -59,7 +59,7 @@ def load():
 	G = EcGroup(nid=713)
 	priv = G.order().random()
 	pub = priv * G.generator()
-	if multipling(8888, auths):
+	if multiping(8888, auths):
 		listen_on_port(8888, pub, priv)	
 	else:
 		print "Not all authorities are responsive"
