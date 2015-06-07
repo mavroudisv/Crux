@@ -31,8 +31,8 @@ def load():
 	
 	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
-	auths = auths_str.split(' ')
-	processors = processors_str.split(' ')
+	auths = auths_str.split('-')
+	processors = processors_str.split('-')
 	
 	
 	if utilities.multiping(8888, auths):

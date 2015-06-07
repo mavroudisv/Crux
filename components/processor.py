@@ -54,7 +54,7 @@ def load():
 	global pub
 	
 	auths_str = sys.argv[1]
-	auths = auths_str.split(' ')
+	auths = auths_str.split('-')
 	
 	G = EcGroup(nid=713)
 	priv = G.order().random()
