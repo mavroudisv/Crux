@@ -45,7 +45,7 @@ def groupKey(params, pubKeys=[]):
 
 
 
-def load(auths=[], processor):
+def load(processor, auths=[]):
 	#global G
 	#global priv
 	#global pub
