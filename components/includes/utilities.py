@@ -13,14 +13,15 @@ def ping(ip, port):
 		s.send(json.dumps(data))
 		result = json.loads(s.recv(1024))
 		s.close()
+	
+		if result['return'] == rand:
+			return True
+		else:
+			return False
+
 	except Exception, e:	
 		print "Exception while pinging: ", e
-	
-	if result['return'] == rand:
-		return True
-	else:
 		return False
-
 
 def multiping(port, auths=[]):
 	for a in auths:
