@@ -11,7 +11,7 @@ G = None
 priv = None
 pub = None
 
-
+supported_stats = ['median']
 	
 	
 	
@@ -37,7 +37,15 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				if data['request'] == 'ping':
 					contents = data['contents']
 					self.request.sendall(json.dumps({'return': contents['value']}))
+				
+				elif data['request'] == 'stat':
+					contents = data['contents']
 					
+					if contents['value'] in supported_stats:
+						self.request.sendall(json.dumps({'return': "Stat supported."}))
+					else:						
+						self.request.sendall(json.dumps({'return': "Stat not supported."}))
+				
 				else:
 					break
 						

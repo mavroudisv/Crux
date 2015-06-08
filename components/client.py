@@ -1,6 +1,5 @@
 import socket
 import json
-import random
 import sys
 
 from includes import utilities
