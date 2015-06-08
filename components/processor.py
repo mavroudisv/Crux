@@ -41,10 +41,13 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				elif data['request'] == 'stat':
 					contents = data['contents']
 					
-					if contents['value'] in supported_stats:
-						self.request.sendall(json.dumps({'return': "Stat supported."}))
+					stat_type = contents['type']
+					attribute = contents['attribute']
+					
+					if contents['type'] in supported_stats:
+						self.request.sendall(json.dumps({'return':{'type':stat_type, 'attribute':attribute, 'value':200}}))
 					else:						
-						self.request.sendall(json.dumps({'return': "Stat not supported."}))
+						self.request.sendall(json.dumps({'return':{'type':stat_type, 'attribute':attribute, 'value': 0}}))
 				
 				else:
 					break

@@ -46,6 +46,16 @@ def main():
 		print EcPt.from_binary(binascii.unhexlify(result['return']), G)
 
 
+	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
+		data = {'request':'stat', 'contents': {'type':'median', 'attribute':'column 1'}}
+		s.send(json.dumps(data))
+		result = json.loads(s.recv(1024))
+		print "The %s of %s is: %s",  result['type'] , result['attribute'], result['value']
+		
+		#from pprint import pprint
+		#pprint(result)
+
+
 	elif len(sys.argv)> 1 and sys.argv[1] == "encdec":
 
 
