@@ -47,13 +47,9 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 				elif data['request'] == 'encrypt':
 
-					
-					#print data['contents']['value']
+				
 					contents = data['contents']
 					cipher_obj = Classes.Ct.enc(pub, contents['value'])
-					value = cipher_obj.dec(priv)					
-					#print value
-					#print contents['value']
 					json_obj = cipher_obj.to_JSON()
 					self.request.sendall(json.dumps({'return': json_obj}))
 					#from pprint import pprint
@@ -61,20 +57,10 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 					
 				elif data['request'] == 'decrypt':
-					G = EcGroup(nid=713)
-					#contents = data['contents']
-					contents = json.loads(data['contents'])
-					#from pprint import pprint
-					#pprint(contents)
-					#create object
-					#data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':str(self.k.hex()), 'm':str(self.m), 'pub':hexlify(self.pub.export())}
-					cipher_obj = Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), None)
-					#print cipher_obj.pub
 					
+					contents = json.loads(data['contents'])
+					cipher_obj = Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), None)
 					value = cipher_obj.dec(priv)					
-					#print value
-
-					#return plaintext
 					self.request.sendall(json.dumps({'return': value}))
 						
 				else:
