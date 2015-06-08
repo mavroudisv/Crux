@@ -50,13 +50,12 @@ def main():
 		data = {'request':'stat', 'contents': {'type':'median', 'attribute':'column 1'}}
 		s.send(json.dumps(data))
 		data = json.loads(s.recv(1024))
+		result = data['return']
 		
-		result = json.loads(data['return'])
-		
-		#print "The %s of %s is: %s",  result['type'] , result['attribute'], result['value']
-		
-		from pprint import pprint
-		pprint(result)
+		if result['success']=='True':
+			print "The %s of %s is: %s" %(result['type'] , result['attribute'], result['value'])
+		else:
+			print "Stat could not be computed."
 
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "encdec":
