@@ -45,9 +45,9 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					attribute = contents['attribute']
 					
 					if contents['type'] in supported_stats:
-						self.request.sendall(json.dumps({'return':['success':True, 'type':stat_type, 'attribute':attribute, 'value':200]}))
+						self.request.sendall(json.dumps({'return':['success':'True', 'type':stat_type, 'attribute':attribute, 'value':200]}))
 					else:						
-						self.request.sendall(json.dumps({'return':['success':False, 'type':0, 'attribute':0, 'value': 0]}))
+						self.request.sendall(json.dumps({'return':['success':'False', 'type':0, 'attribute':0, 'value': 0]}))
 				
 				else:
 					break
