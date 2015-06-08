@@ -42,7 +42,7 @@ def load():
 		print "Not all authorities are responsive"
 
 	if utilities.multiping(8888, processors):
-		print "Processor is not responsive."
+		print "Processor is responsive."
 	else:
 		print "Processor is not responsive."
 
