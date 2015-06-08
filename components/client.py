@@ -74,12 +74,15 @@ def generate_group_key(auths=[]):
 	
 	#get pub key from each auth
 	pub_keys = []
-	for auth in auths:
-		
+	for auth_ip in auths:
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((auth_ip, 8888))
 		data = {'request':'pubkey'}
 		s.send(json.dumps(data))
 		result = json.loads(s.recv(1024))
-		print EcPt.from_binary(binascii.unhexlify(result['return']), G)
+		s.close()
+		new_key = EcPt.from_binary(binascii.unhexlify(result['return']), G)
+		print new_key
 		pub_keys.append(new_key)
 	
 	c_pub = pub_keys[0]
