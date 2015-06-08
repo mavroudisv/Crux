@@ -32,7 +32,6 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			try:
 				data = json.loads(self.request.recv(1024).strip())
 				print data['request'] 
-				# process the data, i.e. print it:
 				
 				if data['request'] == 'ping':
 					contents = data['contents']
