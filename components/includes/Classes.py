@@ -5,6 +5,7 @@ from copy import copy
 import time
 import json
 import math
+import binascii
 
 from petlib.ec import *
 from petlib.ec import EcGroup, EcPt
@@ -191,6 +192,60 @@ class CountSketchCt(object):
         self.d, self.w = d, w
         self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
 
+        #from pprint import pprint
+        #pprint(self.store)
+
+    def to_JSON(self):
+        
+        #from pprint import pprint
+        #pprint(self.__dict__)
+        
+        #'d': 7,
+		#'pub': <petlib.ec.EcPt object at 0x7f4b692c5050>,
+		#'store': [[<includes.Classes.Ct instance at 0x7f4b692c3b48>,
+		#'w': 50}
+
+        variables_dict = {'pub':hexlify(self.pub.export()), 'd':str(self.d), 'w':str(self.w)}
+        #print variables_dict
+        
+        
+        store_dict = {}
+        i=0
+        for row in self.store:
+            #store_str += '['
+            row_str = ''
+            for cell in row:
+                store_dict[i] = json.loads(cell.to_JSON())
+                i += 1
+                
+			
+        result_dict = {'vars':variables_dict, 'store':store_dict}
+        
+        return json.dumps(result_dict)
+
+    def load_store_list(self, w, d, store_dict):
+		
+        #from pprint import pprint
+        #pprint(store_dict)
+        #print type(store_dict)
+		#list_json = json.loads(store_str)
+	
+		#from pprint import pprint
+		#pprint(list_json)
+	
+		#Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), None)
+		#)
+
+        G = EcGroup(nid=713)
+        counter = 0		
+        for i in range(d):
+            for j in range(w):
+                
+                contents = store_dict[str(counter)]
+                #print Bn.from_hex(contents['k'])
+                self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
+                counter += 1
+                
 
     def dump(self):
         from cStringIO import StringIO

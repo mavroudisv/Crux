@@ -1,11 +1,12 @@
 import socket
 import json
 import sys
-from petlib.ec import *
+from petlib.ec import EcGroup, EcPt
+from petlib.bn import Bn
 import binascii
 import SocketServer
 import json
-
+import pickle
 
 from includes import utilities
 from includes import Classes
@@ -70,6 +71,12 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 #def parse_csv(first_row, num_of_rows, column_str): #number of rows-> how many rows counting from the first one, #column attribute of stat
 
 
+def generate_sketch(w, d, values=[]):
+	
+	cs = CountSketchCt(w, d, common_key)
+	for v in values:
+		cs.insert(v)	
+
 def generate_group_key(auths=[]):
 	
 	#get pub key from each auth
@@ -131,4 +138,41 @@ def load():
 
 
 if __name__ == "__main__":
-    load()
+    #load()
+    pass
+    
+    
+G = EcGroup(nid=713)
+x = G.order().random()
+y = x * G.generator()
+
+
+cs = Classes.CountSketchCt(50, 7, y)
+from pprint import pprint
+#print json.loads(cs.to_JSON())['vars']
+#print json.loads(cs.to_JSON())['store']
+
+cs.insert(11)
+cs.insert(11)
+
+result_str=cs.to_JSON()
+#pprint(result_str)
+obj_json = json.loads(result_str)
+
+tmp_w = int(obj_json['vars']['w'])
+tmp_d = int(obj_json['vars']['d'])
+
+#w, d, pub
+sketch = Classes.CountSketchCt(
+tmp_w, #w
+tmp_d, #d
+EcPt.from_binary(binascii.unhexlify(obj_json['vars']['pub']),G)) #pub
+
+#pprint(obj_json['store']['4']['a'])
+
+sketch.load_store_list(tmp_w, tmp_d, obj_json['store'])
+
+sketch.insert(11)
+c, d = sketch.estimate(11)
+est = c.dec(x)
+print est
