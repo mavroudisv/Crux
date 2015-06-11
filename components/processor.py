@@ -73,7 +73,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							s.close()
 
 
-'''
+
 							tmp_w = int(obj_json['vars']['w'])
 							tmp_d = int(obj_json['vars']['d'])
 							sketch = Classes.CountSketchCt(
@@ -89,7 +89,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							c, d = sketch.estimate(11)
 							est = c.dec(x)
 							print est
-						'''
+						
 						
 					
 						#add sketches
@@ -97,7 +97,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						#run stat protocol
 					
 						#return result
-						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':200}}))
+						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':est}}))
 					else:						
 						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': 0}}))
 				
