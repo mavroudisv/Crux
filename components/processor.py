@@ -61,6 +61,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						
 						#send requests to clients, gather sketches
 						for cl in clients:
+							pass
+							'''
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							s.connect((cl, 8888))
 							
@@ -87,7 +89,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							c, d = sketch.estimate(11)
 							est = c.dec(x)
 							print est
-						
+						'''
 						
 					
 						#add sketches
