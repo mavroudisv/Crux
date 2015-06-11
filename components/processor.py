@@ -58,7 +58,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_column_2 = attributes['column_2']
 						attr_column_3 = attributes['column_3']
 						
-						'''
+						
 						#send requests to clients, gather sketches
 						for cl in clients:
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,7 +87,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							c, d = sketch.estimate(11)
 							est = c.dec(x)
 							print est
-						'''
+						
 						
 						#add sketches
 						
