@@ -42,7 +42,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				elif data['request'] == 'stat':
 					
 					contents = data['contents']
-					if contents['type'] in supported_stats:
+					try:
+						#contents['type'] in supported_stats:
 						
 						#read request
 						#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'', 'sheet':'', 'column_1':'', 'column_2':' ', 'column_3':''}}}
@@ -98,8 +99,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 						#return result
 						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':200}}))
-					else:						
-						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': 0}}))
+					expection Exception e:						
+						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': str(e)}}))
 				
 				else:
 					break
