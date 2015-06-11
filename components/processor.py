@@ -41,6 +41,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				elif data['request'] == 'stat':
 					
+					contents = data['contents']
 					if contents['type'] in supported_stats:
 						
 						#read request
