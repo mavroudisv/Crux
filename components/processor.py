@@ -59,7 +59,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_column_2 = attributes['column_2']
 						attr_column_3 = attributes['column_3']
 						
-						
+						'''
 						#send requests to clients, gather sketches
 						for cl in clients:
 							
@@ -94,7 +94,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							s.close()
 					
 						#add sketches
-						
+						'''
 						#run stat protocol
 					
 						#return result
