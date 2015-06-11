@@ -100,7 +100,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						#return result
 						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':200}}))
 					except Exception as e:						
-						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': str(e)}}))
+						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': e}}))
 				
 				else:
 					break
