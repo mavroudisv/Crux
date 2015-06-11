@@ -48,7 +48,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'', 'sheet':'', 'column_1':'', 'column_2':' ', 'column_3':''}}}
 						
 						
-						'''
+						
 						contents = data['contents']
 						stat_type = contents['type']
 						attributes = contents['attributes']
@@ -57,7 +57,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_column_1 = attributes['column_1']
 						attr_column_2 = attributes['column_2']
 						attr_column_3 = attributes['column_3']
-						'''
+						
 						'''
 						#send requests to clients, gather sketches
 						for cl in clients:
