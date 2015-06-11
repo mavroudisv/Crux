@@ -61,8 +61,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						
 						#send requests to clients, gather sketches
 						for cl in clients:
-							pass
-							'''
+							
+						
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							s.connect((cl, 8888))
 							
@@ -73,7 +73,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							s.close()
 
 
-
+'''
 							tmp_w = int(obj_json['vars']['w'])
 							tmp_d = int(obj_json['vars']['d'])
 							sketch = Classes.CountSketchCt(
