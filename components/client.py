@@ -6,7 +6,7 @@ from petlib.bn import Bn
 import binascii
 import SocketServer
 import json
-import pickle
+import csv
 
 from includes import utilities
 from includes import Classes
@@ -14,6 +14,7 @@ from includes import Classes
 G = None
 auths=[]
 common_key = None
+data_dict = None
 
 def listen_on_port(port):
 	
@@ -47,8 +48,26 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 				if data['request'] == 'sketch':
 					
-					user_data = fetch_data()
-					plain_sketch = generate_sketch(user_data)
+					
+					#{'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'', 'sheet':'', 'column_1':'', 'column_2':' ', 'column_3':''}}}
+					contents = data['contents']
+					stat_type = contents['type']
+					attributes = contents['attributes']
+					attr_file = attributes['file']
+					attr_sheet = attributes['sheet']
+					attr_column_1 = attributes['column_1']
+					attr_column_2 = attributes['column_2']
+					attr_column_3 = attributes['column_3']
+					rows = attributes['rows']
+					
+					#rows = []
+					#rows.append('E01000893')
+					#rows.append('E01000895')
+					
+					#load json
+					#replace string consts with json strings
+					values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
+					plain_sketch = generate_sketch(values)
 					encrypt_sketch(plain_sketch, common_key)
 					
 					contents = json.loads(data['contents'])
@@ -68,14 +87,77 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 
 #num of rows can in our case be determined by the processor
-#def parse_csv(first_row, num_of_rows, column_str): #number of rows-> how many rows counting from the first one, #column attribute of stat
+def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row_lbls=[]): #column attribute of stat
+	
+	cells = []
+	
+	import xlrd
+	workbook = xlrd.open_workbook(filename)
+	worksheet = workbook.sheet_by_name(sheet)
+	
 
+	from itertools import product
+	for row_index in xrange(worksheet.nrows):
+		for col_index in xrange(worksheet.ncols):
+
+			#print col_index
+			#print row_index
+			#row label
+			tmp_row_lbl = worksheet.cell(row_index, 0).value
+
+			#column label 1
+			tmp_counter = col_index
+			tmp_label = ''
+			while True:
+				tmp_label = worksheet.cell(0, tmp_counter).value
+				if tmp_label != '':
+					break
+				tmp_counter -= 1
+
+			tmp_col_lbl_1 = tmp_label
+
+			#column label 2
+			tmp_counter = col_index
+			tmp_label = ''
+			while True:
+				tmp_label = worksheet.cell(1, tmp_counter).value
+				if tmp_label != '':
+					break
+				tmp_counter -= 1
+			
+			tmp_col_lbl_2 = tmp_label
+			
+			#column label 3
+			tmp_counter = col_index
+			tmp_label = ''
+			while True:
+				tmp_label = worksheet.cell(2, tmp_counter).value
+				if tmp_label != '':
+					break
+				tmp_counter -= 1
+		
+			#excel treats every num as float and adds .0
+			if isinstance(tmp_label, float):
+				tmp_col_lbl_3 = str(tmp_label)[:-2]
+			else:
+				tmp_col_lbl_3 = tmp_label
+
+		
+			#print tmp_col_lbl_1,tmp_col_lbl_2,tmp_col_lbl_3,tmp_row_lbl
+			#print '------------'
+			if (tmp_col_lbl_1 == column_lbl_1
+			 and tmp_col_lbl_2 == column_lbl_2
+			 and tmp_col_lbl_3 == column_lbl_3
+			 and tmp_row_lbl in row_lbls):
+				 cells.append(worksheet.cell(row_index, col_index).value)
+		
+	return cells
 
 def generate_sketch(w, d, values=[]):
-	
-	cs = CountSketchCt(w, d, common_key)
+	sk = Classes.CountSketchCt(w, d, common_key)
 	for v in values:
-		cs.insert(v)	
+		sk.insert(v)	
+	return sk
 
 def generate_group_key(auths=[]):
 	
@@ -146,17 +228,25 @@ G = EcGroup(nid=713)
 x = G.order().random()
 y = x * G.generator()
 
-
+'''
+#Test for csv parsing
+common_key = y
+rows = []
+rows.append('E01000893')
+rows.append('E01000895')
+values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
+cs = generate_sketch(50, 7, values)					
+c, d = cs.estimate(9.0)
+est = c.dec(x)
+print est					
+'''
+					
+'''
+#Test from sketch creation, serialization and de-serialization
 cs = Classes.CountSketchCt(50, 7, y)
-from pprint import pprint
-#print json.loads(cs.to_JSON())['vars']
-#print json.loads(cs.to_JSON())['store']
-
 cs.insert(11)
 cs.insert(11)
-
 result_str=cs.to_JSON()
-#pprint(result_str)
 obj_json = json.loads(result_str)
 
 tmp_w = int(obj_json['vars']['w'])
@@ -176,3 +266,4 @@ sketch.insert(11)
 c, d = sketch.estimate(11)
 est = c.dec(x)
 print est
+'''

@@ -47,7 +47,7 @@ def main():
 
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
-		data = {'request':'stat', 'contents': {'type':'median', 'attribute':'column 1'}}
+		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
 		s.send(json.dumps(data))
 		data = json.loads(s.recv(1024))
 		result = data['return']
