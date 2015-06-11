@@ -46,6 +46,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						#read request
 						#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'', 'sheet':'', 'column_1':'', 'column_2':' ', 'column_3':''}}}
 						
+						
 						'''
 						contents = data['contents']
 						stat_type = contents['type']
