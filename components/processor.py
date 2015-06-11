@@ -65,7 +65,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							s.connect((cl, 8888))
-							'''
+							
 							#add rows for each client
 							data['contents']['attributes']['rows'] = ['E01000893', 'E01000895']
 							s.send(json.dumps(data))
@@ -89,7 +89,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 							c, d = sketch.estimate(11)
 							est = c.dec(x)
 							print est
-						'''
+						
 							s.close()
 					
 						#add sketches
