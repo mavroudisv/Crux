@@ -49,7 +49,9 @@ def main():
 	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
 		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
 		s.send(json.dumps(data))
+		print "AAAA"
 		data = json.loads(s.recv(1024))
+		print "BBBB"
 		result = data['return']
 		
 		if result['success']=='True':
