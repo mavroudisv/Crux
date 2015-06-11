@@ -97,7 +97,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						#run stat protocol
 					
 						#return result
-						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':est}}))
+						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':200}}))
 					else:						
 						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': 0}}))
 				
