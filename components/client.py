@@ -220,13 +220,10 @@ def load():
 
 
 if __name__ == "__main__":
-    #load()
+    load()
     pass
     
-    
-G = EcGroup(nid=713)
-x = G.order().random()
-y = x * G.generator()
+
 
 '''
 #Test for csv parsing
