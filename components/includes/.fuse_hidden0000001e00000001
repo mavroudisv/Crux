@@ -64,9 +64,6 @@ class Ct:
         self.pub = pub
         self.a = a
         self.b = b
-        #print "!!!!!!!!!!!!!!!!!!!!!"
-        #print b
-        #print "!!!!!!!!!!!!!!!!!!!!!"
         self.k = k
         self.m = m
 
@@ -82,19 +79,7 @@ class Ct:
         #'m': 2,
         #'pub': <petlib.ec.EcPt object at 0x7f3138aa0320>}
 
-        new_k = None
-        try:
-         new_k = str(self.k.hex())
-        except:
-			pass
-
-        #print self.a
-        #print self.b
-        #print new_k
-        #print str(self.m)
-        #print self.pub
-	
-        data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':new_k, 'm':str(self.m), 'pub':hexlify(self.pub.export())}
+        data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':str(self.k.hex()), 'm':str(self.m), 'pub':hexlify(self.pub.export())}
         return json.dumps(data)
 
     def self_check(self):
@@ -207,6 +192,8 @@ class CountSketchCt(object):
         self.d, self.w = d, w
         self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
 
+        #from pprint import pprint
+        #pprint(self.store)
 
     def to_JSON(self):
         
@@ -249,25 +236,16 @@ class CountSketchCt(object):
 		#Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), None)
 		#)
 
-
-
         G = EcGroup(nid=713)
         counter = 0		
         for i in range(d):
             for j in range(w):
                 
                 contents = store_dict[str(counter)]
-				
+                #print Bn.from_hex(contents['k'])
                 self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
                 counter += 1
-    
-    
-    def print_details(self):
-    
-         for i in range(self.d):
-             for j in range(self.w):
-				 print self.store[i][j].b           
-				 print "---------"
+                
 
     def dump(self):
         from cStringIO import StringIO
@@ -301,10 +279,6 @@ class CountSketchCt(object):
     def estimate(self, item):
         """ Estimate the frequency of one value """
 
-        print "d: ", self.d
-        print "w: ", self.w
-        print "item: ", str(item)
-
         item = str(item)
         h = hashes(item, self.d)
         h2 = []
@@ -322,14 +296,6 @@ class CountSketchCt(object):
             elist += [v1, -v2]
         
         estimates = Ct.sum(elist)
-        
-        from pprint import pprint
-        print estimates.b
-        print "----"
-        print self.d
-        print "----"
-        print "----"
-        
         return estimates, self.d
 
     @staticmethod

@@ -2,24 +2,22 @@ from petlib.ec import *
 import binascii
 
 import SocketServer
+import socket
 import json
 import sys
 
+from includes import config as conf
 from includes import utilities
 from includes import Classes
 
 G = None
-priv = None
-pub = None
 auths = []
 clients = []
 supported_stats = ['median']
 	
 	
 	
-def listen_on_port(port, pub, priv):
-
-	print pub
+def listen_on_port(port):
 	
 	server = TCPServer(('0.0.0.0', port), TCPServerHandler)
 	server.serve_forever()
@@ -43,13 +41,6 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 					contents = data['contents']
 					try:
-						#contents['type'] in supported_stats:
-						
-						#read request
-						#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'', 'sheet':'', 'column_1':'', 'column_2':' ', 'column_3':''}}}
-						
-						
-						
 						contents = data['contents']
 						stat_type = contents['type']
 						attributes = contents['attributes']
@@ -57,48 +48,44 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_sheet = attributes['sheet']
 						attr_column_1 = attributes['column_1']
 						attr_column_2 = attributes['column_2']
-						attr_column_3 = attributes['column_3']
+						attr_column_3 = attributes['column_3']					
 						
-						'''
-						#send requests to clients, gather sketches
+						#send requests to clients to gather sketches and add sketches
 						for cl in clients:
-							
-						
-							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-							s.connect((cl, 8888))
-							
+
 							#add rows for each client
 							data['contents']['attributes']['rows'] = ['E01000893', 'E01000895']
+							#add sketch attributes
+							data['contents']['attributes']['sk_w'] = 50
+							data['contents']['attributes']['sk_d'] = 7
+							
+							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+							s.connect((cl, conf.CLIENT_PORT))												
 							s.send(json.dumps(data))
-							json_obj = json.loads(s.recv(1024)) #store response
+							obj_json = json.loads(s.recv(100000000)) #store response
 							s.close()
+							
+							
+							data = json.loads(obj_json['return'])
+							tmp_w = int(data['vars']['w'])
+							tmp_d = int(data['vars']['d'])
+							
 
-
-
-							tmp_w = int(obj_json['vars']['w'])
-							tmp_d = int(obj_json['vars']['d'])
-							sketch = Classes.CountSketchCt(
-							tmp_w, #w
-							tmp_d, #d
-							EcPt.from_binary(binascii.unhexlify(obj_json['vars']['pub']),G)) #pub
-
-							#pprint(obj_json['store']['4']['a'])
-
-							sketch.load_store_list(tmp_w, tmp_d, obj_json['store'])
-
-							sketch.insert(11)
-							c, d = sketch.estimate(11)
-							est = c.dec(x)
+							sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(data['vars']['pub']),G))
+							sketch.load_store_list(tmp_w, tmp_d, data['store'])
+							#sketch.insert(11)
+							#sketch.print_details()
+							c, d = sketch.estimate(9.0)
+						
+							est = collective_decrypt(c, auths)
 							print est
 							
-							s.close()
-					
-						#add sketches
-						'''
+						
+						
 						#run stat protocol
 					
-						#return result
-						self.request.sendall(json.dumps({'return':{'success':'True', 'type':'stat_type', 'attribute':'attribute', 'value':200}}))
+						self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':est}}))
+					
 					except Exception as e:						
 						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': e}}))
 				
@@ -110,29 +97,47 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				#print "Exception while receiving message: ", e
 	
 	
-	
+def collective_decrypt(ct, auths=[]):
+	for auth in auths:
+		try:
+			
+			json_obj_str = ct.to_JSON()
+			data = {'request':'decrypt', 'contents': json_obj_str}
+
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect((auth, conf.AUTH_PORT)) #connect to authority
+			s.send(json.dumps(data))
+			
+			result = json.loads(s.recv(1024))
+			s.close()
+
+			return result['return']
+			
+		except Exception as e:
+			print "Exception in collective decrypt: ", e
+			return None
+
+
 		
 def load():
 	global G
-	global priv
-	global pub
 	global auths
 	global clients
 	
 	
+	G = EcGroup(nid=conf.EC_GROUP)
+	
 	auths_str = sys.argv[1]
 	clients_str = sys.argv[2]
-	
 	auths = auths_str.split('-')
 	clients = clients_str.split('-')
 	
-	G = EcGroup(nid=713)
-	priv = G.order().random()
-	pub = priv * G.generator()
-	if utilities.multiping(8888, auths):
-		listen_on_port(8888, pub, priv)	
+    
+	if utilities.multiping(conf.AUTH_PORT, auths):
+		print "Authorities responsive. Listening..."
+		listen_on_port(conf.PROCESSOR_PORT)	
 	else:
-		print "Not all authorities are responsive"
+		print "Not all authorities are responsive."
 
 if __name__ == "__main__":
     load()
