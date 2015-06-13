@@ -147,7 +147,8 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 def generate_sketch(w, d, values=[]):
 	sk = Classes.CountSketchCt(w, d, common_key)
 	for v in values:
-		sk.insert(v)	
+		#print type(v)
+		sk.insert(int(v))	
 	return sk
 
 
