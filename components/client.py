@@ -45,7 +45,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						break
 				
 				data = json.loads(inp)
-				print data['request']
+				print "Request for: " + str(data['request'])
 
 				if data['request'] == 'stat':
 					#parameters
@@ -62,7 +62,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					sk_d = attributes['sk_d']
 					
 					#load values from xls
-					values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
+					values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
+					#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
 					
 					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
 					

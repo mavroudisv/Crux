@@ -5,6 +5,7 @@ import SocketServer
 import socket
 import json
 import sys
+import math
 
 from includes import config as conf
 from includes import utilities
@@ -31,7 +32,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		while True:
 			try:
 				data = json.loads(self.request.recv(1024).strip())
-				print data['request'] 
+				print "Request for: " + str(data['request'])
 				
 				if data['request'] == 'ping':
 					contents = data['contents']
@@ -51,39 +52,32 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_column_3 = attributes['column_3']					
 						
 						#send requests to clients to gather sketches and add sketches
+						sketches = []
 						for cl in clients:
+							sketch = get_sketch_from_client(cl, data)
+							sketches.append(sketch)
+							
+						#Aggregate sketches
+						sk_sum = Classes.CountSketchCt.aggregate(sketches)
+						
+						#Compute Median
+						proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20)
+						try:
+							plain = None
+							while True:
+								v = proto.send(plain)
+								if isinstance(v, int):
+									break
+								plain = collective_decrypt(v, auths)
+								print "*: " + str(plain)
 
-							#add rows for each client
-							data['contents']['attributes']['rows'] = ['E01000893', 'E01000895']
-							#add sketch attributes
-							data['contents']['attributes']['sk_w'] = 50
-							data['contents']['attributes']['sk_d'] = 7
-							
-							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-							s.connect((cl, conf.CLIENT_PORT))												
-							s.send(json.dumps(data))
-							obj_json = json.loads(s.recv(100000000)) #store response
-							s.close()
-							
-							
-							data = json.loads(obj_json['return'])
-							tmp_w = int(data['vars']['w'])
-							tmp_d = int(data['vars']['d'])
-							
+							print("Estimated median: %s" % (v))
+						except Exception as e:						
+							print e
+						c, d = sk_sum.estimate(9.0)
+						est = collective_decrypt(c, auths)
 
-							sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(data['vars']['pub']),G))
-							sketch.load_store_list(tmp_w, tmp_d, data['store'])
-							#sketch.insert(11)
-							#sketch.print_details()
-							c, d = sketch.estimate(9.0)
-						
-							est = collective_decrypt(c, auths)
-							print est
-							
-						
-						
-						#run stat protocol
-					
+											
 						self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':est}}))
 					
 					except Exception as e:						
@@ -96,6 +90,41 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				pass
 				#print "Exception while receiving message: ", e
 	
+
+def get_sketch_from_client(client_ip, data):
+	try:
+		data['contents']['attributes']['rows'] = ['E01000893', 'E01000895']
+		#data['contents']['attributes']['rows'] = ['E01000893']
+			
+		tmp_w = int(math.ceil(math.e / conf.EPSILON))
+		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+		print tmp_w
+		print tmp_d
+		
+		data['contents']['attributes']['sk_w'] = tmp_w
+		data['contents']['attributes']['sk_d'] = tmp_d
+		
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((client_ip, conf.CLIENT_PORT))												
+		s.send(json.dumps(data))
+		obj_json = json.loads(s.recv(100000000)) #store response
+		s.close()
+		
+		
+		data = json.loads(obj_json['return'])
+		tmp_w = int(data['vars']['w'])
+		tmp_d = int(data['vars']['d'])
+		
+		
+		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(data['vars']['pub']),G))
+		sketch.load_store_list(tmp_w, tmp_d, data['store'])
+
+
+		return sketch
+	except Exception, e:
+		print "Exception while getting sketch from client: ", e
+
+
 	
 def collective_decrypt(ct, auths=[]):
 	for auth in auths:
