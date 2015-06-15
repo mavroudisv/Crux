@@ -3,19 +3,13 @@ import socket
 import random
 import json
 
-def ping(ip, port):
+def ping(sock):
 	
 	try:
-		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.settimeout(5.0)
-		s.connect((ip, port))
-
 		rand = random.randint(1, 99999)
 		data = {'request':'ping', 'contents': {'value':rand}}
-		s.send(json.dumps(data))
-		result = json.loads(s.recv(1024))
-		s.shutdown(socket.SHUT_RDWR)
-		s.close()
+		sock.send(json.dumps(data))
+		result = json.loads(sock.recv(1024))
 	
 		if result['return'] == rand:
 			return True
@@ -27,7 +21,15 @@ def ping(ip, port):
 		return False
 
 def multiping(port, auths=[]):
-	for a in auths:
-		if not ping(a, port):
-			return False
-	return True
+	
+	result = True
+	for a_ip in auths:	
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		#s.settimeout(120.0)
+		sock.connect((a_ip, int(port)))
+		if not ping(sock):
+			result = False
+		sock.shutdown(socket.SHUT_RDWR)
+		sock.close()
+	
+	return result

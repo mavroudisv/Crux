@@ -42,58 +42,50 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		global auths
 		global common_key
 		
-		while True:
-			try:
-				while True:
-					inp = self.request.recv(1024).strip()
-					time.sleep(1)
-					if inp != '':
-						break
-				
-				data = json.loads(inp)
-				print "Request for: " + str(data['request'])
+		try:
+			inp = self.request.recv(1024).strip()				
+			data = json.loads(inp)
+			print "Request for: " + str(data['request'])
 
-				if data['request'] == 'stat':
-					#parameters
-					contents = data['contents']
-					stat_type = contents['type']
-					attributes = contents['attributes']
-					attr_file = attributes['file']
-					attr_sheet = attributes['sheet']
-					attr_column_1 = attributes['column_1']
-					attr_column_2 = attributes['column_2']
-					attr_column_3 = attributes['column_3']
-					sk_w = attributes['sk_w']
-					sk_d = attributes['sk_d']
+			if data['request'] == 'stat':
+				#parameters
+				contents = data['contents']
+				stat_type = contents['type']
+				attributes = contents['attributes']
+				attr_file = attributes['file']
+				attr_sheet = attributes['sheet']
+				attr_column_1 = attributes['column_1']
+				attr_column_2 = attributes['column_2']
+				attr_column_3 = attributes['column_3']
+				sk_w = attributes['sk_w']
+				sk_d = attributes['sk_d']
+			
+				#rows = attributes['rows']
+				#rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
+	
+				#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
+				rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
+				#data['contents']['attributes']['rows'] = ['E01000893']
 				
-					#rows = attributes['rows']
-					rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
-		
-					#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-					#data['contents']['attributes']['rows'] = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
-					#data['contents']['attributes']['rows'] = ['E01000893']
+				#load values from xls
+				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
+				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
+				
+				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
+				
+				print json.dumps({'return': plain_sketch.to_JSON()})
+				
+				
+				#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+				
+				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+				values = []
+				plain_sketch = None
+				gc.collect()
+				
 					
-					#load values from xls
-					values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
-					#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
-					
-					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
-					
-					print json.dumps({'return': plain_sketch.to_JSON()})
-					
-					
-					#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-					
-					SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-					values = []
-					plain_sketch = None
-					gc.collect()
-					
-				else:
-					break
-						
-			except Exception, e:
-				print "Exception while receiving message: ", e
+		except Exception, e:
+			print "Exception on incomming connection: ", e
 
 
 

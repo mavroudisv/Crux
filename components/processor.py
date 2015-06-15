@@ -30,53 +30,48 @@ class TCPServer(SocketServer.ThreadingTCPServer):
 
 class TCPServerHandler(SocketServer.BaseRequestHandler):
 	def handle(self):
-		while True:
-			try:
-				data = json.loads(self.request.recv(1024).strip())
-				print "Request for: " + str(data['request'])
+		try:
+			data = json.loads(self.request.recv(1024).strip())
+			print "Request for: " + str(data['request'])
+			
+			if data['request'] == 'ping':
+				contents = data['contents']
+				self.request.sendall(json.dumps({'return': contents['value']}))
+			
+			elif data['request'] == 'stat':
 				
-				if data['request'] == 'ping':
-					contents = data['contents']
-					self.request.sendall(json.dumps({'return': contents['value']}))
+				contents = data['contents']
+				stat_type = contents['type']
 				
-				elif data['request'] == 'stat':
+				attributes = contents['attributes']
+				attr_file = attributes['file']
+				attr_sheet = attributes['sheet']
+				attr_column_1 = attributes['column_1']
+				attr_column_2 = attributes['column_2']
+				attr_column_3 = attributes['column_3']					
+				
+				#Send requests to clients to gather sketches and add sketches
+				sketches = []
+				for cl in clients:
+					sketch = get_sketch_from_client(cl, data)
+					sketches.append(sketch)
 					
-					contents = data['contents']
-					try:						
-						contents = data['contents']
-						stat_type = contents['type']
-						
-						attributes = contents['attributes']
-						attr_file = attributes['file']
-						attr_sheet = attributes['sheet']
-						attr_column_1 = attributes['column_1']
-						attr_column_2 = attributes['column_2']
-						attr_column_3 = attributes['column_3']					
-						
-						#Send requests to clients to gather sketches and add sketches
-						sketches = []
-						for cl in clients:
-							sketch = get_sketch_from_client(cl, data)
-							sketches.append(sketch)
-							
-						
-						sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
-						
-						#Run selected operation
-						if (stat_type == 'median'):
-							median = median_operation(sk_sum) #Compute median on sum of sketches
-							self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
-							print 'Stat computed. Listening for requests...'
-						else:
-							self.request.sendall(json.dumps({'return':{'success':'False', 'Reason': 'Stat type not supported.'}}))
-						
-					
-					except Exception as e:						
-						print 'Exception while computing stat: ' + str(e)				
-						
-			except Exception, e:
-				pass
-	
+				
+				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
+				
+				#Run selected operation
+				if (stat_type == 'median'):
+					median = median_operation(sk_sum) #Compute median on sum of sketches
+					self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
+					print 'Stat computed. Listening for requests...'
+				else:
+					self.request.sendall(json.dumps({'return':{'success':'False', 'Reason': 'Stat type not supported.'}}))
+				
+				
+		except Exception as e:						
+			print 'Exception on incomming connection: ' + str(e)				
+			
+			
 def median_operation(sk_sum):
 	proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20) #Compute Median
 	plain = None

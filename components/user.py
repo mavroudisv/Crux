@@ -9,33 +9,55 @@ from includes import config as conf
 from includes import utilities
 from includes import Classes
 
+G = EcGroup(nid=conf.EC_GROUP)
 
+def remote_encrypt(ip, port, value):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect((ip, int(port)))
+	data = {'request':'encrypt', 'contents': {'value':value}}
+	s.sendall(json.dumps(data))
+	result = json.loads(s.recv(1024))
+	data = json.loads(result['return'])
+	cipher_obj = Classes.Ct(EcPt.from_binary(binascii.unhexlify(data['pub']),G), EcPt.from_binary(binascii.unhexlify(data['a']),G), EcPt.from_binary(binascii.unhexlify(data['b']),G), Bn.from_hex(data['k']), None)
+	s.close()
+	return cipher_obj
+
+def remote_decrypt(ip, port, cipher_obj):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect((ip, int(port)))
+	json_obj_str = cipher_obj.to_JSON()
+	data = {'request':'decrypt', 'contents': json_obj_str}
+	s.sendall(json.dumps(data))
+	result = json.loads(s.recv(1024))
+	s.close()
+	return result['return']
+	
 def main():	
 	
-	G = EcGroup(nid=conf.EC_GROUP)
-
 	action = sys.argv[1]
 	ip = sys.argv[2]
 	port = sys.argv[3]
-	
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.settimeout(120.0)
-	s.connect((ip, int(port)))
 
 	if len(sys.argv)> 1 and sys.argv[1] == "ping":
-		print utilities.ping(ip, int(port))
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
+		print utilities.ping(s)
+		s.close()
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "pub":
-
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
 		#pubkey
 		data = {'request':'pubkey'}
-		s.send(json.dumps(data))
+		s.sendall(json.dumps(data))
 		result = json.loads(s.recv(1024))
 		print EcPt.from_binary(binascii.unhexlify(result['return']), G)
-
+		s.close()
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
 		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
 		s.send(json.dumps(data))
 		print "Request Sent"
@@ -51,28 +73,19 @@ def main():
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "encdec":
 
-
-		#encrypt
-		data = {'request':'encrypt', 'contents': {'value':200}}
-		s.send(json.dumps(data))
-		result = json.loads(s.recv(1024))
-		data = json.loads(result['return'])
-		from pprint import pprint
-		pprint(data)
-		 
-		cipher_obj = Classes.Ct(EcPt.from_binary(binascii.unhexlify(data['pub']),G), EcPt.from_binary(binascii.unhexlify(data['a']),G), EcPt.from_binary(binascii.unhexlify(data['b']),G), Bn.from_hex(data['k']), None)
-		pprint(cipher_obj.to_JSON())
+		value = 200
+		tmp_obj = remote_encrypt(ip, port, value)
+		new_value = remote_decrypt(ip, port, tmp_obj)
+		print new_value
+		assert value==new_value
 
 
-		#decrypt
-		json_obj_str = cipher_obj.to_JSON()
-		data = {'request':'decrypt', 'contents': json_obj_str}
-		s.send(json.dumps(data))
-		result = json.loads(s.recv(1024))
-		print result['return']
+	
 
-	s.shutdown(socket.SHUT_RDWR)
-	s.close()
+
 
 if __name__ == "__main__":
 	main()
+
+
+
