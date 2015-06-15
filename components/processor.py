@@ -10,6 +10,7 @@ import math
 from includes import config as conf
 from includes import utilities
 from includes import Classes
+from includes import SocketExtend as SockExt
 
 G = None
 auths = []
@@ -41,9 +42,10 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				elif data['request'] == 'stat':
 					
 					contents = data['contents']
-					try:
+					try:						
 						contents = data['contents']
 						stat_type = contents['type']
+						
 						attributes = contents['attributes']
 						attr_file = attributes['file']
 						attr_sheet = attributes['sheet']
@@ -51,82 +53,75 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 						attr_column_2 = attributes['column_2']
 						attr_column_3 = attributes['column_3']					
 						
-						#send requests to clients to gather sketches and add sketches
+						#Send requests to clients to gather sketches and add sketches
 						sketches = []
 						for cl in clients:
 							sketch = get_sketch_from_client(cl, data)
 							sketches.append(sketch)
 							
-						#Aggregate sketches
-						sk_sum = Classes.CountSketchCt.aggregate(sketches)
 						
-						#Compute Median
-						proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20)
-						try:
-							plain = None
-							while True:
-								v = proto.send(plain)
-								if isinstance(v, int):
-									break
-								plain = collective_decryption(v, auths)
-								print "*: " + str(plain)
-
-							#print "Estimated median: " + str(v)
-							
-						except Exception as e:						
-							print e
+						sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 						
-						#c, d = sk_sum.estimate(9)
-						#est = collective_decryption(c, auths)
-
-											
-						self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':v}}))
+						#Run selected operation
+						if (stat_type == 'median'):
+							median = median_operation(sk_sum) #Compute median on sum of sketches
+							self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
+							print 'Stat computed. Listening for requests...'
+						else:
+							self.request.sendall(json.dumps({'return':{'success':'False', 'Reason': 'Stat type not supported.'}}))
+						
 					
 					except Exception as e:						
-						self.request.sendall(json.dumps({'return':{'success':'False', 'type':0, 'attribute':0, 'value': e}}))
-				
-				else:
-					break
+						print 'Exception while computing stat: ' + str(e)				
 						
 			except Exception, e:
 				pass
-				#print "Exception while receiving message: ", e
 	
+def median_operation(sk_sum):
+	proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20) #Compute Median
+	plain = None
+	while True:
+		v = proto.send(plain)
+		if isinstance(v, int):
+			break
+		plain = collective_decryption(v, auths)
+		#print "*: " + str(plain)
+
+	#print "Estimated median: " + str(v)
+	return str(v)
 
 def get_sketch_from_client(client_ip, data):
 	try:
-		
-		data['contents']['attributes']['rows'] = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
-		
-		#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-		#data['contents']['attributes']['rows'] = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
-		#data['contents']['attributes']['rows'] = ['E01000893']
-			
+					
+		#Compute sketch parameters
 		tmp_w = int(math.ceil(math.e / conf.EPSILON))
 		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
-		#print tmp_w
-		#print tmp_d
-		
+
 		data['contents']['attributes']['sk_w'] = tmp_w
 		data['contents']['attributes']['sk_d'] = tmp_d
 		
+		#Fetch data from client as a serialized sketch object
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((client_ip, conf.CLIENT_PORT))												
 		s.send(json.dumps(data))
-		obj_json = json.loads(s.recv(1000000000)) #store response
+		#data = s.recv(100000000)
+		data = SockExt.recv_msg(s)
+		print data
+		obj_json = json.loads(data) #The sketch object can be quite large
+		s.shutdown(socket.SHUT_RDWR)
 		s.close()
 		
 		
 		data = json.loads(obj_json['return'])
-		tmp_w = int(data['vars']['w'])
-		tmp_d = int(data['vars']['d'])
+		#tmp_w = int(data['vars']['w'])
+		#tmp_d = int(data['vars']['d'])
 		
-		
+		 #De-serialize sketch object
 		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(data['vars']['pub']),G))
 		sketch.load_store_list(tmp_w, tmp_d, data['store'])
 
-
 		return sketch
+
 	except Exception, e:
 		print "Exception while getting sketch from client: ", e
 
@@ -144,6 +139,7 @@ def collective_decryption(ct, auths=[]):
 			s.send(json.dumps(data))
 			
 			result = json.loads(s.recv(1024))
+			s.shutdown(socket.SHUT_RDWR)
 			s.close()
 
 			return result['return']

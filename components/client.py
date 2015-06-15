@@ -7,10 +7,15 @@ import binascii
 import SocketServer
 import json
 import csv
+import time
+import xlrd
+import gc
 
 from includes import config as conf
 from includes import utilities
 from includes import Classes
+from includes import SocketExtend as SockExt
+
 
 G = None
 auths=[]
@@ -41,6 +46,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			try:
 				while True:
 					inp = self.request.recv(1024).strip()
+					time.sleep(1)
 					if inp != '':
 						break
 				
@@ -57,9 +63,15 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					attr_column_1 = attributes['column_1']
 					attr_column_2 = attributes['column_2']
 					attr_column_3 = attributes['column_3']
-					rows = attributes['rows']
 					sk_w = attributes['sk_w']
 					sk_d = attributes['sk_d']
+				
+					#rows = attributes['rows']
+					rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
+		
+					#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
+					#data['contents']['attributes']['rows'] = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
+					#data['contents']['attributes']['rows'] = ['E01000893']
 					
 					#load values from xls
 					values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
@@ -67,13 +79,20 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
 					
-					self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+					print json.dumps({'return': plain_sketch.to_JSON()})
+					
+					
+					#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+					
+					SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+					values = []
+					plain_sketch = None
+					gc.collect()
 					
 				else:
 					break
 						
 			except Exception, e:
-				
 				print "Exception while receiving message: ", e
 
 
@@ -83,7 +102,7 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 	
 	cells = []
 	
-	import xlrd
+
 	workbook = xlrd.open_workbook(filename)
 	worksheet = workbook.sheet_by_name(sheet)
 	
@@ -157,12 +176,15 @@ def generate_group_key(auths=[]):
 	pub_keys = []
 	for auth_ip in auths: #get pub key from each auth
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.settimeout(10.0)
 		s.connect((auth_ip, conf.AUTH_PORT))
 		data = {'request':'pubkey'}
 		s.send(json.dumps(data))
 		result = json.loads(s.recv(1024))
+		s.shutdown(socket.SHUT_RDWR)
 		s.close()
-		new_key = EcPt.from_binary(binascii.unhexlify(result['return']), G)
+		
+		new_key = EcPt.from_binary(binascii.unhexlify(result['return']), G) #De-serialize Ecpt object
 		pub_keys.append(new_key)
 	
 	c_pub = pub_keys[0]

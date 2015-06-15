@@ -20,6 +20,7 @@ def main():
 	
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.settimeout(120.0)
 	s.connect((ip, int(port)))
 
 	if len(sys.argv)> 1 and sys.argv[1] == "ping":
@@ -70,7 +71,7 @@ def main():
 		result = json.loads(s.recv(1024))
 		print result['return']
 
-		
+	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
 if __name__ == "__main__":
