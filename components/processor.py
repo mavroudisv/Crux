@@ -101,7 +101,7 @@ def get_sketch_from_client(client_ip, data):
 		s.send(json.dumps(data))
 		#data = s.recv(100000000)
 		data = SockExt.recv_msg(s)
-		print data
+		#print data
 		obj_json = json.loads(data) #The sketch object can be quite large
 		s.shutdown(socket.SHUT_RDWR)
 		s.close()

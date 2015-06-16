@@ -21,7 +21,8 @@ G = None
 auths=[]
 common_key = None
 data_dict = None
-
+unique_id = None
+num_of_clients = None
 
 
 def listen_on_port(port):
@@ -73,7 +74,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
 				
-				print json.dumps({'return': plain_sketch.to_JSON()})
+				#print json.dumps({'return': plain_sketch.to_JSON()})
 				
 				
 				#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
@@ -150,7 +151,9 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 			 and tmp_col_lbl_3 == column_lbl_3
 			 and tmp_row_lbl in row_lbls): #if (row and columns labels) match was found
 				 cells.append(worksheet.cell(row_index, col_index).value) #add cell to list
-		
+			
+			#if row_index<upper bound and row_index>lower bound
+			
 	return cells
 
 
@@ -192,10 +195,17 @@ def load():
 	global G
 	global auths
 	global common_key
-
+	global unique_id
+	global num_of_clients
 	
 	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
+	
+	#unique_id = sys.argv[3]
+	#print unique_id
+	#num_of_clients = sys.argv[4]
+	#print num_of_clients
+	
 	auths = auths_str.split('-')
 	processors = processors_str.split('-')
 	
