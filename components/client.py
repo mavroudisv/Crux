@@ -71,7 +71,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				print "A"
 				num_rows = count_rows(attr_file, attr_sheet)
 				print "B"
-				(lower, upper) = give_range(int(num_clients), int(num_rows), 3, unique_id, (int(unique_id) == int(num_clients)-1))
+				(lower, upper) = give_range(int(num_clients), int(num_rows), 3, int(unique_id), (int(unique_id) == int(num_clients)-1))
 				print "C"
 				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, int(lower), int(upper))
 				print "D"
@@ -102,6 +102,7 @@ def count_rows(filename, sheet):
 
 
 def give_range(num_clients, num_rows, num_labels_rows, client_id, add_residual=False):
+	
 	
 	num_clean_rows = num_rows - num_labels_rows
 	rows_per_client = num_clean_rows / num_clients
@@ -224,9 +225,9 @@ def load():
 	
 	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
-	unique_id = sys.argv[3]
+	unique_id = int(sys.argv[3])
 	print unique_id
-	num_clients = sys.argv[4]
+	num_clients = int(sys.argv[4])
 	print num_clients
 	
 	auths = auths_str.split('-')
