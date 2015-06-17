@@ -61,17 +61,11 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				sk_w = attributes['sk_w']
 				sk_d = attributes['sk_d']
 			
-				#rows = attributes['rows']
-				#rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
-	
-				#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-				#rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
-				#data['contents']['attributes']['rows'] = ['E01000893']
 				
 				print "A"
 				num_rows = count_rows(attr_file, attr_sheet)
 				print "B"
-				(lower, upper) = give_range(int(num_clients), int(num_rows), 3, int(unique_id), (int(unique_id) == int(num_clients)-1))
+				(lower, upper) = give_range(num_clients, num_rows, 3, unique_id, (unique_id == (num_clients)-1))
 				print "C"
 				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, int(lower), int(upper))
 				print "D"
@@ -177,7 +171,7 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, low
 			 and tmp_col_lbl_3 == column_lbl_3
 			 and row_index<=upper_bound
 			 and row_index>=lower_bound):
-				cells.append(worksheet.cell(row_index, col_index).value) #add cell to list
+				cells.append(int(worksheet.cell(row_index, col_index).value)) #add cell to list
 				print worksheet.cell(row_index, col_index).value
 
 	return cells
