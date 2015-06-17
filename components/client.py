@@ -109,6 +109,9 @@ def give_range(num_clients, num_rows, num_labels_rows, client_id, add_residual=F
 		residual = num_clean_rows - (rows_per_client * num_clients)
 		_to += residual
 
+	print "from: " + str(_from)
+	print "to: " + str(_to)
+	
 	return (_from, _to)
 
 #Fetch from the xls cells with matching labels
@@ -172,7 +175,7 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, low
 			 and row_index<=upper_bound
 			 and row_index>=lower_bound):
 				cells.append(int(worksheet.cell(row_index, col_index).value)) #add cell to list
-				print worksheet.cell(row_index, col_index).value
+				print int(worksheet.cell(row_index, col_index).value)
 
 	return cells
 
