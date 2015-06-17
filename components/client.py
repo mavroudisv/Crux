@@ -69,8 +69,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				#data['contents']['attributes']['rows'] = ['E01000893']
 				
 				num_rows = count_rows(attr_file, attr_sheet)
-				(lower, upper) = give_range(num_clients, num_rows, 3, unique_id, (unique_id == num_clients-1))
-				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, lower, upper)
+				(lower, upper) = give_range(int(num_clients), int(num_rows), 3, unique_id, (unique_id == num_clients-1))
+				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, int(lower), int(upper))
 				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
 				
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
