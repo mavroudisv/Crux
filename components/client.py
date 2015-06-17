@@ -72,16 +72,17 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
 				
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
-				
+				print "E"
 				#print json.dumps({'return': plain_sketch.to_JSON()})
 				
 				
 				#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-				
+				print "F"
 				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-				values = []
-				plain_sketch = None
-				gc.collect()
+				print "G"
+				#values = []
+				#plain_sketch = None
+				#gc.collect()
 				
 					
 		except Exception, e:
@@ -175,7 +176,7 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, low
 			 and row_index<=upper_bound
 			 and row_index>=lower_bound):
 				cells.append(int(worksheet.cell(row_index, col_index).value)) #add cell to list
-				print int(worksheet.cell(row_index, col_index).value)
+				#print int(worksheet.cell(row_index, col_index).value)
 
 	return cells
 
