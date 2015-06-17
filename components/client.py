@@ -22,7 +22,7 @@ auths=[]
 common_key = None
 data_dict = None
 unique_id = None
-num_of_clients = None
+num_clients = None
 
 
 def listen_on_port(port):
@@ -65,11 +65,12 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				#rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
 	
 				#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-				rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
+				#rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
 				#data['contents']['attributes']['rows'] = ['E01000893']
 				
-				#load values from xls
-				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
+				num_rows = count_rows(attr_file, attr_sheet)
+				(lower, upper) = give_range(num_clients, num_rows, 3, unique_id, (unique_id == num_clients-1))
+				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, lower, upper)
 				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
 				
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
@@ -89,13 +90,33 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			print "Exception on incomming connection: ", e
 
 
+def count_rows(filename, sheet):
+
+	workbook = xlrd.open_workbook(filename)
+	worksheet = workbook.sheet_by_name(sheet)
+	return worksheet.nrows
+
+
+def give_range(num_clients, num_rows, num_labels_rows, client_id, add_residual=False):
+	
+	num_clean_rows = num_rows - num_labels_rows
+	rows_per_client = num_clean_rows / num_clients
+	
+	_from = rows_per_client*client_id + num_labels_rows + 1
+	_to = rows_per_client*(client_id+1) + num_labels_rows
+	
+	#add residual in the first client
+	if add_residual:
+		residual = num_clean_rows - (rows_per_client * num_clients)
+		_to += residual
+
+	return (_from, _to)
 
 #Fetch from the xls cells with matching labels
-def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row_lbls=[]):
+def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, lower_bound, upper_bound):
 	
 	cells = []
 	
-
 	workbook = xlrd.open_workbook(filename)
 	worksheet = workbook.sheet_by_name(sheet)
 	
@@ -149,13 +170,12 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 			if (tmp_col_lbl_1 == column_lbl_1
 			 and tmp_col_lbl_2 == column_lbl_2
 			 and tmp_col_lbl_3 == column_lbl_3
-			 and tmp_row_lbl in row_lbls): #if (row and columns labels) match was found
-				 cells.append(worksheet.cell(row_index, col_index).value) #add cell to list
-			
-			#if row_index<upper bound and row_index>lower bound
-			
-	return cells
+			 and row_index<=upper_bound
+			 and row_index>=lower_bound):
+				cells.append(worksheet.cell(row_index, col_index).value) #add cell to list
+				print worksheet.cell(row_index, col_index).value
 
+	return cells
 
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
@@ -183,7 +203,7 @@ def generate_group_key(auths=[]):
 		pub_keys.append(new_key)
 	
 	c_pub = pub_keys[0]
-
+	print c_pub
 	for pkey in pub_keys[1:]:
 		print pkey
 		c_pub += pkey #pub is ecpt, so we add
@@ -196,15 +216,14 @@ def load():
 	global auths
 	global common_key
 	global unique_id
-	global num_of_clients
+	global num_clients
 	
 	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
-	
-	#unique_id = sys.argv[3]
-	#print unique_id
-	#num_of_clients = sys.argv[4]
-	#print num_of_clients
+	unique_id = sys.argv[3]
+	print unique_id
+	num_clients = sys.argv[4]
+	print num_clients
 	
 	auths = auths_str.split('-')
 	processors = processors_str.split('-')
