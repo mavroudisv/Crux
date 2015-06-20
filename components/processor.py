@@ -6,6 +6,8 @@ import socket
 import json
 import sys
 import math
+import sys
+import traceback
 
 from includes import config as conf
 from includes import utilities
@@ -54,14 +56,17 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				sketches = []
 				for cl in clients:
 					sketch = get_sketch_from_client(cl, data)
+					print type(sketch)
 					sketches.append(sketch)
 					
-				
+				print "len: " + str(len(sketches))
+				print sketches[0].pub
 				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 				
 				#Run selected operation
 				if (stat_type == 'median'):
-					median = median_operation(sk_sum) #Compute median on sum of sketches
+					#sk_sum.print_details()
+					median = median_operation(sketches[0]) #Compute median on sum of sketches
 					self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
 					print 'Stat computed. Listening for requests...'
 				else:
@@ -69,7 +74,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				
 		except Exception as e:						
-			print 'Exception on incomming connection: ' + str(e)				
+			print 'Exception on incoming connection: ' + str(e)				
 			
 			
 def median_operation(sk_sum):
@@ -79,11 +84,14 @@ def median_operation(sk_sum):
 		v = proto.send(plain)
 		if isinstance(v, int):
 			break
+		
+		print v
 		plain = collective_decryption(v, auths)
-		#print "*: " + str(plain)
+		print "*: " + str(plain)
 
 	#print "Estimated median: " + str(v)
 	return str(v)
+
 
 def get_sketch_from_client(client_ip, data):
 	try:
@@ -99,33 +107,42 @@ def get_sketch_from_client(client_ip, data):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((client_ip, conf.CLIENT_PORT))												
 		s.send(json.dumps(data))
-		#data = s.recv(100000000)
+		print "A"
 		data = SockExt.recv_msg(s)
 		#print data
+		
+		print "B"
 		obj_json = json.loads(data) #The sketch object can be quite large
 		s.shutdown(socket.SHUT_RDWR)
 		s.close()
 		
-		
-		data = json.loads(obj_json['return'])
+		print "C"
+		contents = json.loads(obj_json['return'])
 		#tmp_w = int(data['vars']['w'])
 		#tmp_d = int(data['vars']['d'])
 		
-		 #De-serialize sketch object
-		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(data['vars']['pub']),G))
-		sketch.load_store_list(tmp_w, tmp_d, data['store'])
+		print "D"
+		#De-serialize sketch object
+		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
+		print "E"
+		sketch.load_store_list(tmp_w, tmp_d, contents['store'])
+		print "F"
+
+		#sketch.print_details()
+		#from pprint import pprint
+		#pprint(sketch.__dict__)
 
 		return sketch
 
-	except Exception, e:
-		print "Exception while getting sketch from client: ", e
+	except Exception as e:
+		print "Exception while getting sketch from client: " + str(e)
+		traceback.print_exc()
 
 
 	
 def collective_decryption(ct, auths=[]):
 	for auth in auths:
 		try:
-			
 			json_obj_str = ct.to_JSON()
 			data = {'request':'decrypt', 'contents': json_obj_str}
 

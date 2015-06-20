@@ -22,7 +22,7 @@ auths=[]
 common_key = None
 data_dict = None
 unique_id = None
-num_of_clients = None
+num_clients = None
 
 
 def listen_on_port(port):
@@ -65,10 +65,11 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				#rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
 	
 				#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-				rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
+				#rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
 				#data['contents']['attributes']['rows'] = ['E01000893']
 				
 				#load values from xls
+				rows = get_rows('data/data_large.xls','iadatasheet2', num_clients, unique_id)
 				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
 				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
 				
@@ -89,6 +90,56 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			print "Exception on incomming connection: ", e
 
 
+def get_rows(filename, sheet, num_clients, client_id):
+	
+	#get num of rows
+	num_labels_rows = 3 -1 #it counts from 0
+	workbook = xlrd.open_workbook(filename)
+	worksheet = workbook.sheet_by_name(sheet)
+	num_rows = worksheet.nrows
+	num_clean_rows = num_rows - num_labels_rows
+	print "A"
+	#compute rows for this client
+	rows_per_client = num_clean_rows / num_clients
+	print "B"
+	lower_bound = rows_per_client*client_id + num_labels_rows + 1
+	upper_bound = rows_per_client*(client_id+1) + num_labels_rows
+	print "C"
+	
+	lower_bound = 7
+	upper_bound = 1001
+		
+	
+	print "from: " + str(lower_bound)
+	print "to: " + str(upper_bound)
+	
+	#add residual in the first client
+	if ((num_clients -1)==client_id):
+		residual = num_clean_rows - (rows_per_client * num_clients)
+		upper_bound += residual
+	
+	
+	#get labels from these rows
+	rows = []
+	#workbook = xlrd.open_workbook(filename)
+	#worksheet = workbook.sheet_by_name(sheet)
+	
+	from itertools import product
+	for row_index in xrange(worksheet.nrows):
+		#row label
+		tmp_row_lbl = worksheet.cell(row_index, 1).value			
+	
+		#print tmp_col_lbl_1,tmp_col_lbl_2,tmp_col_lbl_3,tmp_row_lbl
+		if (row_index<=upper_bound and row_index>=lower_bound and not tmp_row_lbl == ''):
+			rows.append(tmp_row_lbl)
+			#print tmp_row_lbl
+
+	print len(rows)
+	print "------"
+	#if ((num_clients -1)==client_id):
+	#	rows.pop(1) #remove last live, with the average
+	
+	return rows
 
 #Fetch from the xls cells with matching labels
 def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row_lbls=[]):
@@ -105,7 +156,7 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 		for col_index in xrange(worksheet.ncols):
 
 			#row label
-			tmp_row_lbl = worksheet.cell(row_index, 0).value
+			tmp_row_lbl = worksheet.cell(row_index, 1).value
 
 			#column label 1
 			tmp_counter = col_index
@@ -150,8 +201,8 @@ def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row
 			 and tmp_col_lbl_2 == column_lbl_2
 			 and tmp_col_lbl_3 == column_lbl_3
 			 and tmp_row_lbl in row_lbls): #if (row and columns labels) match was found
-				 cells.append(worksheet.cell(row_index, col_index).value) #add cell to list
-			
+				cells.append(int(worksheet.cell(row_index, col_index).value)) #add cell to list
+				print int(worksheet.cell(row_index, col_index).value)
 			#if row_index<upper bound and row_index>lower bound
 			
 	return cells
@@ -196,15 +247,15 @@ def load():
 	global auths
 	global common_key
 	global unique_id
-	global num_of_clients
+	global num_clients
 	
 	auths_str = sys.argv[1]
 	processors_str = sys.argv[2]
 	
-	#unique_id = sys.argv[3]
-	#print unique_id
-	#num_of_clients = sys.argv[4]
-	#print num_of_clients
+	unique_id = int(sys.argv[3])
+	print unique_id
+	num_clients = int(sys.argv[4])
+	print num_clients
 	
 	auths = auths_str.split('-')
 	processors = processors_str.split('-')

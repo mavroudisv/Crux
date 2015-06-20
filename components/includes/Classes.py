@@ -6,6 +6,8 @@ import time
 import json
 import math
 import binascii
+import traceback
+
 
 from petlib.ec import *
 from petlib.ec import EcGroup, EcPt
@@ -66,6 +68,14 @@ class Ct:
         self.b = b
         self.k = k
         self.m = m
+        
+        '''
+        print self.a
+        print self.b
+        print self.k
+        print str(self.m)
+        print self.pub
+        '''
 
         if __debug__:
             self.self_check()
@@ -85,19 +95,55 @@ class Ct:
         except:
 			pass
 
-        #print self.a
-        #print self.b
-        #print new_k
-        #print str(self.m)
-        #print self.pub
-	
-        data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':new_k, 'm':str(self.m), 'pub':hexlify(self.pub.export())}
+        new_m = None
+        try:
+         new_m = str(self.m.hex())
+        except:
+			pass
+
+        '''
+        print "json:------------"
+        print self.a
+        print self.b
+        print new_k
+        print str(self.m)
+        print self.pub
+	    '''
+	  
+        data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':new_k, 'm':new_m, 'pub':hexlify(self.pub.export())}
         return json.dumps(data)
 
     def self_check(self):
         """ Runs a self check """
         if self.k is not None and self.m is not None:
             g = self.pub.group.generator()
+            
+            
+            if (not self.a == self.k * g) or (not self.b == self.k * self.pub + self.m * g):
+                print "******"
+                print self.a == self.k * g
+                print self.b == self.k * self.pub + self.m * g
+                print "b: " + str(self.b)
+                print "k: " + str(self.k)
+                print "pub: " + str(self.pub)
+                print "g: " + str(g)
+                print "m: " + str(self.m)
+                print "******"
+                
+            #if (not self.a == self.k * g) or (not self.b == self.k * self.pub + self.m * g):
+            #    raw_input("Press Enter to continue...")
+                
+            '''
+            if (str(self.m)=='16')
+                print self.a == self.k * g
+                print self.b == self.k * self.pub + self.m * g
+                print "b: " + str(self.b)
+                print "k: " + str(self.k)
+                print "pub: " + str(self.pub)
+                print "g: " + str(g)
+                print "m: " + str(self.m)
+             '''
+                          
             assert self.a == self.k * g
             assert self.b == self.k * self.pub + self.m * g
 
@@ -235,35 +281,41 @@ class CountSketchCt(object):
 
     def load_store_list(self, w, d, store_dict):
 		
-        #from pprint import pprint
-        #pprint(store_dict)
-        #print type(store_dict)
-		#list_json = json.loads(store_str)
-	
-		#from pprint import pprint
-		#pprint(list_json)
-	
-		#Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), None)
-		#)
-
-
-
+        print type(store_dict)
+		
         G = EcGroup(nid=713)
         counter = 0		
         for i in range(d):
             for j in range(w):
                 
                 contents = store_dict[str(counter)]
-				
-                self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
-                counter += 1
-    
+                from pprint import pprint
+                
+                try:
+                    print "-------"
+                    print "b: " + contents['b']                    
+                    print "k: " + contents['k']
+                    print "k _HEX: " + str(Bn.from_hex(contents['k']))
+                    print "pub: " + contents['pub']
+                    print "m: " + contents['m']
+                    print "a: " + contents['a']
+                    print "-------"					
+                    
+                    self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
+                    counter += 1
+                   
+                except Exception as e:
+                    print "Exception aaaaaaaaaaaaa: " + str(e)
+                    traceback.print_exc()
+                    
+                                  
+                
     
     def print_details(self):
     
          for i in range(self.d):
              for j in range(self.w):
-				 print self.store[i][j].b           
+				 print self.store[i][j].a           
 				 print "---------"
 
     def dump(self):
@@ -294,7 +346,9 @@ class CountSketchCt(object):
         h = hashes(item, self.d)
         for di in range(self.d):
             self.store[di][h[di] % self.w] += 1 
-
+ 
+        self.store[di][h[di] % self.w].self_check()
+ 
     def estimate(self, item):
         """ Estimate the frequency of one value """
 
@@ -336,6 +390,7 @@ class CountSketchCt(object):
                 for o in others:
                     elist += [o.store[di][wi]]
                 cs.store[di][wi] = Ct.sum(elist)
+
 
         return cs
 
