@@ -64,7 +64,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				EcPt.from_binary(binascii.unhexlify(contents['b']),G),
 				new_k, None)
 				
-				value = cipher_obj.dec(priv) #decrypt ct				
+
+				value = cipher_obj.dec(priv) #decrypt ct
 				
 				self.request.sendall(json.dumps({'return': value}))
 			

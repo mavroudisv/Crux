@@ -14,7 +14,7 @@ from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
 # Make a cached decryption table
-def _make_table(start=-10000, end=10000):
+def _make_table(start=-100000, end=100000):
     G = EcGroup(nid=713)
     g = G.generator()
     o = G.order()
@@ -268,7 +268,6 @@ class CountSketchCt(object):
         store_dict = {}
         i=0
         for row in self.store:
-            #store_str += '['
             row_str = ''
             for cell in row:
                 store_dict[i] = json.loads(cell.to_JSON())

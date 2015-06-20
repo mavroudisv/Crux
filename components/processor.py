@@ -157,7 +157,7 @@ def collective_decryption(ct, auths=[]):
 			return result['return']
 			
 		except Exception as e:
-			print "Exception in collective decrypt: ", e
+			print "Exception during collective decryption: ", e
 			return None
 
 
