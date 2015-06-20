@@ -106,8 +106,8 @@ def get_rows(filename, sheet, num_clients, client_id):
 	upper_bound = rows_per_client*(client_id+1) + num_labels_rows
 	print "C"
 	
-	lower_bound = 7
-	upper_bound = 1000
+	#lower_bound = 7
+	#upper_bound = 1001
 		
 	
 	print "from: " + str(lower_bound)
