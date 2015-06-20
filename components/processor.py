@@ -59,14 +59,14 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					print type(sketch)
 					sketches.append(sketch)
 					
-				print "len: " + str(len(sketches))
-				print sketches[0].pub
+				#print "len: " + str(len(sketches))
+				#print sketches[0].pub
 				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 				
 				#Run selected operation
 				if (stat_type == 'median'):
 					#sk_sum.print_details()
-					median = median_operation(sketches[0]) #Compute median on sum of sketches
+					median = median_operation(sk_sum) #Compute median on sum of sketches
 					self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
 					print 'Stat computed. Listening for requests...'
 				else:
