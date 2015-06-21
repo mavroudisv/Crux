@@ -136,8 +136,8 @@ def get_rows(filename, sheet, num_clients, client_id):
 
 	print len(rows)
 	print "------"
-	#if ((num_clients -1)==client_id):
-	#	rows.pop(1) #remove last live, with the average
+	if ((num_clients-1)==client_id):
+		rows.pop(1) #remove last line, with the average
 	
 	return rows
 

@@ -58,7 +58,8 @@ def main():
 	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((ip, int(port)))
-		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+		#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Lone Parents', 'column_2':'Lone parents not in employment', 'column_3':'2011'}}}
 		s.send(json.dumps(data))
 		print "Request Sent"
 		data = json.loads(s.recv(1024))
