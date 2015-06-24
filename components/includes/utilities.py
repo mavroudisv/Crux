@@ -2,6 +2,7 @@ import random
 import json
 import time
 
+import socket
 import SocketExtend as SockExt
 import config as conf
 import parser as p
