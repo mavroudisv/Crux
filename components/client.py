@@ -9,15 +9,15 @@ import json
 import csv
 import time
 import xlrd
-import gc
+from itertools import product
 
 from includes import config as conf
 from includes import utilities
 from includes import Classes
 from includes import SocketExtend as SockExt
 
-
-G = None
+#Globals
+G = EcGroup(nid=conf.EC_GROUP)
 auths=[]
 common_key = None
 data_dict = None
@@ -36,7 +36,6 @@ class TCPServer(SocketServer.ThreadingTCPServer):
 
 class TCPServerHandler(SocketServer.BaseRequestHandler):
 	def handle(self):
-		
 		global G
 		global priv
 		global pub
@@ -44,7 +43,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		global common_key
 		
 		try:
-			inp = self.request.recv(1024).strip()				
+			inp = SockExt.recv_msg(self.request).strip()				
 			data = json.loads(inp)
 			print "Request for: " + str(data['request'])
 
@@ -61,29 +60,14 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				sk_w = attributes['sk_w']
 				sk_d = attributes['sk_d']
 			
-				#rows = attributes['rows']
-				#rows = ['E01000889', 'E01000890', 'E01000891'] #IT WORKS!
 	
-				#CRASHES WHEN READING INPUT FROM CLIENT. POSSIBLY VERY LARGE INPUT
-				#rows = ['E01000907', 'E01000908', 'E01000909', 'E01000912', 'E01000913', 'E01000893', 'E01000894']
-				#data['contents']['attributes']['rows'] = ['E01000893']
-				
-				#load values from xls
-				rows = get_rows('data/data_large.xls','iadatasheet2', num_clients, unique_id)
-				values = read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows)
-				#values = read_xls_cell('data/data_large.xls','iadatasheet2','Adults in Employment', 'No adults in employment in household: With dependent children','2011',rows)
-				
-				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch
-				
-				#print json.dumps({'return': plain_sketch.to_JSON()})
-				
-				
-				#self.request.sendall(json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-				
+				rows = get_rows('data/data_large.xls','iadatasheet2', num_clients, unique_id) #determine which rows correspond to client
+				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
+				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from value
 				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-				values = []
-				plain_sketch = None
-				gc.collect()
+				print "Request served."
+			else:
+				print "Unknown request type."
 				
 					
 		except Exception, e:
@@ -91,128 +75,43 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 
 def get_rows(filename, sheet, num_clients, client_id):
-	
 	#get num of rows
 	num_labels_rows = 3 -1 #it counts from 0
 	workbook = xlrd.open_workbook(filename)
 	worksheet = workbook.sheet_by_name(sheet)
 	num_rows = worksheet.nrows
 	num_clean_rows = num_rows - num_labels_rows
-	print "A"
+
 	#compute rows for this client
 	rows_per_client = num_clean_rows / num_clients
-	print "B"
 	lower_bound = rows_per_client*client_id + num_labels_rows + 1
 	upper_bound = rows_per_client*(client_id+1) + num_labels_rows
-	print "C"
-	
-	#lower_bound = 7
-	#upper_bound = 1001
-		
-	
-	print "from: " + str(lower_bound)
-	print "to: " + str(upper_bound)
-	
+			
 	#add residual in the first client
 	if ((num_clients -1)==client_id):
 		residual = num_clean_rows - (rows_per_client * num_clients)
 		upper_bound += residual
 	
-	
+	#print "from: " + str(lower_bound)
+	#print "to: " + str(upper_bound)
+
 	#get labels from these rows
-	rows = []
-	#workbook = xlrd.open_workbook(filename)
-	#worksheet = workbook.sheet_by_name(sheet)
-	
-	from itertools import product
+	rows = []	
 	for row_index in xrange(worksheet.nrows):
-		#row label
-		tmp_row_lbl = worksheet.cell(row_index, 1).value			
-	
-		#print tmp_col_lbl_1,tmp_col_lbl_2,tmp_col_lbl_3,tmp_row_lbl
+		
+		tmp_row_lbl = worksheet.cell(row_index, 1).value #row label
 		if (row_index<=upper_bound and row_index>=lower_bound and not tmp_row_lbl == ''):
 			rows.append(tmp_row_lbl)
-			#print tmp_row_lbl
 
-	print len(rows)
-	print "------"
 	if ((num_clients-1)==client_id):
 		rows.pop() #remove last line, with the average
 	
 	return rows
 
-#Fetch from the xls cells with matching labels
-def read_xls_cell(filename, sheet, column_lbl_1, column_lbl_2, column_lbl_3, row_lbls=[]):
-	
-	cells = []
-	
-
-	workbook = xlrd.open_workbook(filename)
-	worksheet = workbook.sheet_by_name(sheet)
-	
-
-	from itertools import product
-	for row_index in xrange(worksheet.nrows):
-		for col_index in xrange(worksheet.ncols):
-
-			#row label
-			tmp_row_lbl = worksheet.cell(row_index, 1).value
-
-			#column label 1
-			tmp_counter = col_index
-			tmp_label = ''
-			while True:
-				tmp_label = worksheet.cell(0, tmp_counter).value
-				if tmp_label != '':
-					break
-				tmp_counter -= 1
-
-			tmp_col_lbl_1 = tmp_label
-
-			#column label 2
-			tmp_counter = col_index
-			tmp_label = ''
-			while True:
-				tmp_label = worksheet.cell(1, tmp_counter).value
-				if tmp_label != '':
-					break
-				tmp_counter -= 1
-			
-			tmp_col_lbl_2 = tmp_label
-			
-			#column label 3
-			tmp_counter = col_index
-			tmp_label = ''
-			while True:
-				tmp_label = worksheet.cell(2, tmp_counter).value
-				if tmp_label != '':
-					break
-				tmp_counter -= 1
-		
-			#excel treats every num as float and adds .0
-			if isinstance(tmp_label, float):
-				tmp_col_lbl_3 = str(tmp_label)[:-2]
-			else:
-				tmp_col_lbl_3 = tmp_label
-
-		
-			#print tmp_col_lbl_1,tmp_col_lbl_2,tmp_col_lbl_3,tmp_row_lbl
-			if (tmp_col_lbl_1 == column_lbl_1
-			 and tmp_col_lbl_2 == column_lbl_2
-			 and tmp_col_lbl_3 == column_lbl_3
-			 and tmp_row_lbl in row_lbls): #if (row and columns labels) match was found
-				cells.append(int(worksheet.cell(row_index, col_index).value)) #add cell to list
-				print int(worksheet.cell(row_index, col_index).value)
-			#if row_index<upper bound and row_index>lower bound
-			
-	return cells
-
-
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
 	sk = Classes.CountSketchCt(w, d, common_key)
 	for v in values:
-		#print type(v)
 		sk.insert(int(v))	
 	return sk
 
@@ -225,16 +124,16 @@ def generate_group_key(auths=[]):
 		s.settimeout(10.0)
 		s.connect((auth_ip, conf.AUTH_PORT))
 		data = {'request':'pubkey'}
-		s.send(json.dumps(data))
-		result = json.loads(s.recv(1024))
+		SockExt.send_msg(s, json.dumps(data))
+		result = json.loads(SockExt.recv_msg(s))
 		s.shutdown(socket.SHUT_RDWR)
 		s.close()
 		
 		new_key = EcPt.from_binary(binascii.unhexlify(result['return']), G) #De-serialize Ecpt object
 		pub_keys.append(new_key)
 	
+	#Add keys
 	c_pub = pub_keys[0]
-
 	for pkey in pub_keys[1:]:
 		print pkey
 		c_pub += pkey #pub is ecpt, so we add
@@ -262,13 +161,13 @@ def load():
 	
 	#Make sure all components are up
 	all_responsive = True
-	if utilities.multiping(conf.AUTH_PORT, auths):
+	if utilities.alive(conf.AUTH_PORT, auths):
 		print "All authorities are responsive"
 	else:
 		all_responsive = False
 		print "Not all authorities are responsive"
 
-	if utilities.multiping(conf.PROCESSOR_PORT, processors):
+	if utilities.alive(conf.PROCESSOR_PORT, processors):
 		print "Processor is responsive."
 	else:
 		all_responsive = False
@@ -276,7 +175,6 @@ def load():
 	
 	
 	if all_responsive == True: #if all components up
-		G = EcGroup(nid=conf.EC_GROUP)
 		common_key = generate_group_key(auths) #compute common key
 		print "Common key: " + str(common_key)
 		print "Listening for requests..."

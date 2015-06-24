@@ -14,15 +14,16 @@ from includes import utilities
 from includes import Classes
 from includes import SocketExtend as SockExt
 
-G = None
+
+#Globals
+G = EcGroup(nid=conf.EC_GROUP)
 auths = []
 clients = []
 supported_stats = ['median']
 	
 	
-	
+
 def listen_on_port(port):
-	
 	server = TCPServer(('0.0.0.0', port), TCPServerHandler)
 	server.serve_forever()
 
@@ -33,18 +34,17 @@ class TCPServer(SocketServer.ThreadingTCPServer):
 class TCPServerHandler(SocketServer.BaseRequestHandler):
 	def handle(self):
 		try:
-			data = json.loads(self.request.recv(1024).strip())
+			data = json.loads(SockExt.recv_msg(self.request).strip())
 			print "Request for: " + str(data['request'])
 			
 			if data['request'] == 'ping':
 				contents = data['contents']
-				self.request.sendall(json.dumps({'return': contents['value']}))
+				SockExt.send_msg(self.request, json.dumps({'return': contents['value']}))
 			
 			elif data['request'] == 'stat':
-				
+				#parameters
 				contents = data['contents']
 				stat_type = contents['type']
-				
 				attributes = contents['attributes']
 				attr_file = attributes['file']
 				attr_sheet = attributes['sheet']
@@ -52,31 +52,29 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_2 = attributes['column_2']
 				attr_column_3 = attributes['column_3']					
 				
-				#Send requests to clients to gather sketches and add sketches
+				#Gather sketches from clients
 				sketches = []
 				for cl in clients:
 					sketch = get_sketch_from_client(cl, data)
 					print type(sketch)
 					sketches.append(sketch)
 					
-				#print "len: " + str(len(sketches))
-				#print sketches[0].pub
 				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
+				
 				
 				#Run selected operation
 				if (stat_type == 'median'):
-					#sk_sum.print_details()
 					median = median_operation(sk_sum) #Compute median on sum of sketches
-					self.request.sendall(json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
+					SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
 					print 'Stat computed. Listening for requests...'
 				else:
-					self.request.sendall(json.dumps({'return':{'success':'False', 'Reason': 'Stat type not supported.'}}))
-				
+					SockExt.send_msg(self.request, json.dumps({'return':{'success':'False'}}))
 				
 		except Exception as e:						
 			print 'Exception on incoming connection: ' + str(e)				
 			
-			
+
+#Compute Median	
 def median_operation(sk_sum):
 	proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20) #Compute Median
 	plain = None
@@ -94,8 +92,7 @@ def median_operation(sk_sum):
 
 
 def get_sketch_from_client(client_ip, data):
-	try:
-					
+	try:			
 		#Compute sketch parameters
 		tmp_w = int(math.ceil(math.e / conf.EPSILON))
 		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
@@ -106,31 +103,21 @@ def get_sketch_from_client(client_ip, data):
 		#Fetch data from client as a serialized sketch object
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((client_ip, conf.CLIENT_PORT))												
-		s.send(json.dumps(data))
-		print "A"
+		SockExt.send_msg(s, json.dumps(data))
+
 		data = SockExt.recv_msg(s)
-		#print data
-		
-		print "B"
+
 		obj_json = json.loads(data) #The sketch object can be quite large
 		s.shutdown(socket.SHUT_RDWR)
 		s.close()
 		
-		print "C"
 		contents = json.loads(obj_json['return'])
 		#tmp_w = int(data['vars']['w'])
 		#tmp_d = int(data['vars']['d'])
 		
-		print "D"
 		#De-serialize sketch object
 		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
-		print "E"
 		sketch.load_store_list(tmp_w, tmp_d, contents['store'])
-		print "F"
-
-		#sketch.print_details()
-		#from pprint import pprint
-		#pprint(sketch.__dict__)
 
 		return sketch
 
@@ -139,7 +126,7 @@ def get_sketch_from_client(client_ip, data):
 		traceback.print_exc()
 
 
-	
+
 def collective_decryption(ct, auths=[]):
 	for auth in auths:
 		try:
@@ -148,9 +135,9 @@ def collective_decryption(ct, auths=[]):
 
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((auth, conf.AUTH_PORT)) #connect to authority
-			s.send(json.dumps(data))
+			SockExt.send_msg(s, json.dumps(data))
 			
-			result = json.loads(s.recv(1024))
+			result = json.loads(SockExt.recv_msg(s))
 			s.shutdown(socket.SHUT_RDWR)
 			s.close()
 
@@ -160,23 +147,18 @@ def collective_decryption(ct, auths=[]):
 			print "Exception during collective decryption: ", e
 			return None
 
-
 		
 def load():
 	global G
 	global auths
 	global clients
 	
-	
-	G = EcGroup(nid=conf.EC_GROUP)
-	
 	auths_str = sys.argv[1]
 	clients_str = sys.argv[2]
 	auths = auths_str.split('-')
 	clients = clients_str.split('-')
-	
     
-	if utilities.multiping(conf.AUTH_PORT, auths):
+	if utilities.alive(conf.AUTH_PORT, auths):
 		print "Authorities responsive. Listening..."
 		listen_on_port(conf.PROCESSOR_PORT)	
 	else:

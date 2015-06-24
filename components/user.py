@@ -8,15 +8,18 @@ import sys
 from includes import config as conf
 from includes import utilities
 from includes import Classes
+from includes import SocketExtend as SockExt
 
+
+#Globals
 G = EcGroup(nid=conf.EC_GROUP)
 
 def remote_encrypt(ip, port, value):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((ip, int(port)))
 	data = {'request':'encrypt', 'contents': {'value':value}}
-	s.sendall(json.dumps(data))
-	result = json.loads(s.recv(1024))
+	SockExt.send_msg(s, json.dumps(data))
+	result = json.loads(SockExt.recv_msg(s))
 	data = json.loads(result['return'])
 	cipher_obj = Classes.Ct(EcPt.from_binary(binascii.unhexlify(data['pub']),G), EcPt.from_binary(binascii.unhexlify(data['a']),G), EcPt.from_binary(binascii.unhexlify(data['b']),G), Bn.from_hex(data['k']), None)
 	s.close()
@@ -27,8 +30,8 @@ def remote_decrypt(ip, port, cipher_obj):
 	s.connect((ip, int(port)))
 	json_obj_str = cipher_obj.to_JSON()
 	data = {'request':'decrypt', 'contents': json_obj_str}
-	s.sendall(json.dumps(data))
-	result = json.loads(s.recv(1024))
+	SockExt.send_msg(s, json.dumps(data))
+	result = json.loads(SockExt.recv_msg(s))
 	s.close()
 	return result['return']
 	
@@ -50,8 +53,8 @@ def main():
 		s.connect((ip, int(port)))
 		#pubkey
 		data = {'request':'pubkey'}
-		s.sendall(json.dumps(data))
-		result = json.loads(s.recv(1024))
+		SockExt.send_msg(s, json.dumps(data))
+		result = json.loads(SockExt.recv_msg(s))
 		print EcPt.from_binary(binascii.unhexlify(result['return']), G)
 		s.close()
 
@@ -60,9 +63,9 @@ def main():
 		s.connect((ip, int(port)))
 		#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
 		data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Lone Parents', 'column_2':'Lone parents not in employment', 'column_3':'2011'}}}
-		s.send(json.dumps(data))
+		SockExt.send_msg(s, json.dumps(data))
 		print "Request Sent"
-		data = json.loads(s.recv(1024))
+		data = json.loads(SockExt.recv_msg(s))
 		print "Response:"
 		result = data['return']
 		

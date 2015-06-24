@@ -13,9 +13,11 @@ from petlib.ec import *
 from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
+from includes import config as conf
+
 # Make a cached decryption table
 def _make_table(start=-100000, end=100000):
-    G = EcGroup(nid=713)
+    G = EcGroup(nid=conf.EC_GROUP)
     g = G.generator()
     o = G.order()
 
@@ -69,20 +71,10 @@ class Ct:
         self.k = k
         self.m = m
         
-        '''
-        print self.a
-        print self.b
-        print self.k
-        print str(self.m)
-        print self.pub
-        '''
-
         if __debug__:
             self.self_check()
 
     def to_JSON(self):
-        #from pprint import pprint
-        #pprint(self.__dict__)
         #'a': <petlib.ec.EcPt object at 0x7f3138aa03c0>,
         #'b': <petlib.ec.EcPt object at 0x7f3138aa0460>,
         #'k': 21827678495601550301649698781985954665524729557422676498904161173493,
@@ -100,15 +92,6 @@ class Ct:
          new_m = str(self.m.hex())
         except:
 			pass
-
-        '''
-        print "json:------------"
-        print self.a
-        print self.b
-        print new_k
-        print str(self.m)
-        print self.pub
-	    '''
 	  
         data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':new_k, 'm':new_m, 'pub':hexlify(self.pub.export())}
         return json.dumps(data)
@@ -117,32 +100,6 @@ class Ct:
         """ Runs a self check """
         if self.k is not None and self.m is not None:
             g = self.pub.group.generator()
-            
-            
-            if (not self.a == self.k * g) or (not self.b == self.k * self.pub + self.m * g):
-                print "******"
-                print self.a == self.k * g
-                print self.b == self.k * self.pub + self.m * g
-                print "b: " + str(self.b)
-                print "k: " + str(self.k)
-                print "pub: " + str(self.pub)
-                print "g: " + str(g)
-                print "m: " + str(self.m)
-                print "******"
-                
-            #if (not self.a == self.k * g) or (not self.b == self.k * self.pub + self.m * g):
-            #    raw_input("Press Enter to continue...")
-                
-            '''
-            if (str(self.m)=='16')
-                print self.a == self.k * g
-                print self.b == self.k * self.pub + self.m * g
-                print "b: " + str(self.b)
-                print "k: " + str(self.k)
-                print "pub: " + str(self.pub)
-                print "g: " + str(g)
-                print "m: " + str(self.m)
-             '''
                           
             assert self.a == self.k * g
             assert self.b == self.k * self.pub + self.m * g
@@ -252,18 +209,12 @@ class CountSketchCt(object):
 
 
     def to_JSON(self):
-        
-        #from pprint import pprint
-        #pprint(self.__dict__)
-        
         #'d': 7,
 		#'pub': <petlib.ec.EcPt object at 0x7f4b692c5050>,
 		#'store': [[<includes.Classes.Ct instance at 0x7f4b692c3b48>,
 		#'w': 50}
 
-        variables_dict = {'pub':hexlify(self.pub.export()), 'd':str(self.d), 'w':str(self.w)}
-        #print variables_dict
-        
+        variables_dict = {'pub':hexlify(self.pub.export()), 'd':str(self.d), 'w':str(self.w)}     
         
         store_dict = {}
         i=0
@@ -279,32 +230,18 @@ class CountSketchCt(object):
         return json.dumps(result_dict)
 
     def load_store_list(self, w, d, store_dict):
-		
-        print type(store_dict)
-		
-        G = EcGroup(nid=713)
+        G = EcGroup(nid=conf.EC_GROUP)
         counter = 0		
         for i in range(d):
-            for j in range(w):
-                
+            for j in range(w):                
                 contents = store_dict[str(counter)]
-                from pprint import pprint
-                
-                try:
-                    print "-------"
-                    print "b: " + contents['b']                    
-                    print "k: " + contents['k']
-                    print "k _HEX: " + str(Bn.from_hex(contents['k']))
-                    print "pub: " + contents['pub']
-                    print "m: " + contents['m']
-                    print "a: " + contents['a']
-                    print "-------"					
-                    
+    
+                try:                    
                     self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
                     counter += 1
                    
                 except Exception as e:
-                    print "Exception aaaaaaaaaaaaa: " + str(e)
+                    print "Exception while loading sketch store matrix: " + str(e)
                     traceback.print_exc()
                     
                                   
