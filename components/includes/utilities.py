@@ -44,6 +44,6 @@ def alive(port, machines=[]):
 				success = True
 				break
 		except Exception as e:
-			attemped += 1
+			attempted += 1
 
 	return success
