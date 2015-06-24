@@ -13,7 +13,6 @@ from itertools import product
 
 from includes import config as conf
 from includes import utilities
-from includes import parser as p
 from includes import Classes
 from includes import SocketExtend as SockExt
 
