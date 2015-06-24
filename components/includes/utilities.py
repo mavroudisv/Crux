@@ -1,5 +1,6 @@
 import random
 import json
+import time
 
 import SocketExtend as SockExt
 import config as conf
@@ -46,6 +47,7 @@ def alive(port, machines=[]):
 				break
 		except Exception as e:
 			print "ouups"
+			time.sleep(1)
 			attempted += 1
 
 	return success
