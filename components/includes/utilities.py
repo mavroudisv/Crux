@@ -1,9 +1,9 @@
 import random
 import json
 
-from includes import SocketExtend as SockExt
-from includes import config as conf
-from includes import parser as p
+import SocketExtend as SockExt
+import config as conf
+import parser as p
 
 def ping(sock):
 	try:

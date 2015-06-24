@@ -13,7 +13,7 @@ from petlib.ec import *
 from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
-from includes import config as conf
+import config as conf
 
 # Make a cached decryption table
 def _make_table(start=-100000, end=100000):
