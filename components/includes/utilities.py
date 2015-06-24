@@ -45,6 +45,7 @@ def alive(port, machines=[]):
 				success = True
 				break
 		except Exception as e:
+			print str(e)
 			time.sleep(1)
 			attempted += 1
 
