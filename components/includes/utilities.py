@@ -42,8 +42,10 @@ def alive(port, machines=[]):
 		try:
 			if utilities.multiping(port, machines):
 				success = True
+				print "hey"
 				break
 		except Exception as e:
+			print "ouups"
 			attempted += 1
 
 	return success
