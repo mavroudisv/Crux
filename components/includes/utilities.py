@@ -41,12 +41,10 @@ def alive(port, machines=[]):
 	success = False
 	while (attempted < conf.tries):
 		try:
-			if utilities.multiping(port, machines):
+			if multiping(port, machines):
 				success = True
-				print "hey"
 				break
 		except Exception as e:
-			print "ouups"
 			time.sleep(1)
 			attempted += 1
 
