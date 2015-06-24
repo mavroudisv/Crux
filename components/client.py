@@ -136,7 +136,6 @@ def generate_group_key(auths=[]):
 	#Add keys
 	c_pub = pub_keys[0]
 	for pkey in pub_keys[1:]:
-		print pkey
 		c_pub += pkey #pub is ecpt, so we add
    
 	return c_pub
@@ -153,9 +152,9 @@ def load():
 	processors_str = sys.argv[2]
 	
 	unique_id = int(sys.argv[3])
-	print unique_id
+	print "Client id: " + str(unique_id)
 	num_clients = int(sys.argv[4])
-	print num_clients
+
 	
 	auths = auths_str.split('-')
 	processors = processors_str.split('-')
