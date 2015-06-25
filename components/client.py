@@ -62,7 +62,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				sk_d = attributes['sk_d']
 			
 	
-				rows = get_rows('data/data_large.xls','iadatasheet2', num_clients, unique_id) #determine which rows correspond to client
+				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from value
 				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
@@ -75,39 +75,6 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			print "Exception on incomming connection: ", e
 
 
-def get_rows(filename, sheet, num_clients, client_id):
-	#get num of rows
-	num_labels_rows = 3 -1 #it counts from 0
-	workbook = xlrd.open_workbook(filename)
-	worksheet = workbook.sheet_by_name(sheet)
-	num_rows = worksheet.nrows
-	num_clean_rows = num_rows - num_labels_rows
-
-	#compute rows for this client
-	rows_per_client = num_clean_rows / num_clients
-	lower_bound = rows_per_client*client_id + num_labels_rows + 1
-	upper_bound = rows_per_client*(client_id+1) + num_labels_rows
-			
-	#add residual in the first client
-	if ((num_clients -1)==client_id):
-		residual = num_clean_rows - (rows_per_client * num_clients)
-		upper_bound += residual
-	
-	#print "from: " + str(lower_bound)
-	#print "to: " + str(upper_bound)
-
-	#get labels from these rows
-	rows = []	
-	for row_index in xrange(worksheet.nrows):
-		
-		tmp_row_lbl = worksheet.cell(row_index, 1).value #row label
-		if (row_index<=upper_bound and row_index>=lower_bound and not tmp_row_lbl == ''):
-			rows.append(tmp_row_lbl)
-
-	if ((num_clients-1)==client_id):
-		rows.pop() #remove last line, with the average
-	
-	return rows
 
 #Add values to sketch
 def generate_sketch(w, d, values=[]):

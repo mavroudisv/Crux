@@ -4,12 +4,13 @@ import time
 from petlib.ec import *
 import binascii
 import sys
+import numpy
 
 from includes import config as conf
 from includes import utilities
 from includes import Classes
 from includes import SocketExtend as SockExt
-
+from includes import parser as p
 
 #Globals
 G = EcGroup(nid=conf.EC_GROUP)
@@ -59,6 +60,7 @@ def main():
 		s.close()
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
+		tic = time.clock()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((ip, int(port)))
 		#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
@@ -70,7 +72,15 @@ def main():
 		result = data['return']
 		
 		if result['success']=='True':
-			print "The %s of %s is: %s" %(result['type'] , result['attribute'], result['value'])
+			approx_median = result['value']
+			cor_median = comp_median('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
+			toc = time.clock()
+			dt = (toc - tic)
+			print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_median)
+			print "The correct median is: " + str(cor_median)
+			print "The err is: " + str(abs(approx_median - cor_median))
+			print "Total time: " + str(dt)
+			
 		else:
 			print "Stat could not be computed."
 
@@ -84,7 +94,15 @@ def main():
 		assert value==new_value
 
 
+
+def comp_median(fn, sheet, column_1, column_2, column_3):
+	#open xls
+	rows = p.get_rows(fn, sheet, 1, 0) #determine which rows correspond to client
+	values = p.read_xls_cell(fn, sheet, column_1, column_2, column_3, rows) #load values from xls
+	median = numpy.median(values)
 	
+	#return median
+	return median
 
 
 

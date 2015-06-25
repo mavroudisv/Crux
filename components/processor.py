@@ -53,12 +53,14 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_3 = attributes['column_3']					
 				
 				#Gather sketches from clients
+				
 				sketches = []
 				for cl in clients:
 					sketch = get_sketch_from_client(cl, data)
-					print type(sketch)
 					sketches.append(sketch)
-					
+				
+				
+				#sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
 				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 				
 				
@@ -83,13 +85,43 @@ def median_operation(sk_sum):
 		if isinstance(v, int):
 			break
 		
-		print v
+		#print v
 		plain = collective_decryption(v, auths)
-		print "*: " + str(plain)
+		#print "*: " + str(plain)
 
 	#print "Estimated median: " + str(v)
 	return str(v)
 
+def get_sketches_from_clients_non_blocking(client_ips, data):
+	try:			
+		#Compute sketch parameters
+		tmp_w = int(math.ceil(math.e / conf.EPSILON))
+		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+
+		data['contents']['attributes']['sk_w'] = tmp_w
+		data['contents']['attributes']['sk_d'] = tmp_d
+		
+		#Fetch data from client as a serialized sketch object
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.setblocking(0)
+		s.connect((client_ip, conf.CLIENT_PORT))												
+		SockExt.send_msg(s, json.dumps(data))
+
+		data = SockExt.recv_msg(s)
+
+		obj_json = json.loads(data) #The sketch object can be quite large
+		s.shutdown(socket.SHUT_RDWR)
+		s.close()
+		
+		contents = json.loads(obj_json['return'])
+		#tmp_w = int(data['vars']['w'])
+		#tmp_d = int(data['vars']['d'])
+		
+		#De-serialize sketch object
+		sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
+		sketch.load_store_list(tmp_w, tmp_d, contents['store'])
+
+		return sketches
 
 def get_sketch_from_client(client_ip, data):
 	try:			

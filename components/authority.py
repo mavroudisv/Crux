@@ -51,8 +51,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			elif data['request'] == 'decrypt':
 				contents = json.loads(data['contents'])
 				
-				from pprint import pprint
-				pprint(contents)
+				#from pprint import pprint
+				#pprint(contents)
 				
 				try:
 					new_k = Bn.from_hex(contents['k'])
