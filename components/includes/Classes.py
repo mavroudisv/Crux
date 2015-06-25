@@ -7,6 +7,7 @@ import json
 import math
 import binascii
 import traceback
+import bsddb
 
 
 from petlib.ec import *
@@ -15,26 +16,17 @@ from petlib.bn import Bn
 
 import config as conf
 
-# Make a cached decryption table
-def _make_table(start=-100000, end=100000):
-    G = EcGroup(nid=conf.EC_GROUP)
-    g = G.generator()
-    o = G.order()
 
-    i_table = {}
-    n_table = {}
-    ix = start * g
-
-    for i in range(start, end):
-        i_table[ix] = i
-        n_table[(o + i) % o] = ix
-        ix = ix + g
-
-        
-    return i_table, n_table
+# Load the precomputed decryption table
+def load_table():
+    db_i_table = bsddb.btopen(conf.FN_I_TABLE, 'c')
+    db_n_table = bsddb.btopen(conf.FN_N_TABLE, 'c')
+    
+    return db_i_table, db_n_table
 
 
-_table, _n_table = _make_table()
+G = EcGroup(nid=conf.EC_GROUP)
+_table, _n_table = load_table()
 
 class Ct:
 
@@ -48,7 +40,7 @@ class Ct:
         k = o.random()
         g = pub.group.generator()
         a = k * g
-        b = k * pub + _n_table[(o + m) % o] # m * g
+        b = k * pub + EcPt.from_binary(binascii.unhexlify(_n_table[str((o + m) % o)]), G) # m * g
         return Ct(pub, a, b, k, m) 
 
 
@@ -56,7 +48,7 @@ class Ct:
         """ Decrypt a ciphertext using a secret key """
         try:
             hm = self.b - x * self.a
-            return _table[hm]
+            return int(_table[str(hm)])
         except Exception as e:
             o = self.pub.group.order()
             self.self_check()
@@ -112,7 +104,7 @@ class Ct:
 
         if isinstance(other, int):
             # Case for int other
-            new_b = self.b + _n_table[(o + other) % o] # other * g
+            new_b = self.b + EcPt.from_binary(binascii.unhexlify(_n_table[str((o + other) % o)]), G) # other * g
             new_k, new_m = None, None
             if self.k is not None:
                 new_m = self.m + other # self.m.mod_add( other, o)
@@ -230,7 +222,6 @@ class CountSketchCt(object):
         return json.dumps(result_dict)
 
     def load_store_list(self, w, d, store_dict):
-        G = EcGroup(nid=conf.EC_GROUP)
         counter = 0		
         for i in range(d):
             for j in range(w):                

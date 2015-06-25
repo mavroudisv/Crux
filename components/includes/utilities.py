@@ -40,7 +40,7 @@ def alive(port, machines=[]):
 	attempted = 0
 
 	success = False
-	while (attempted < conf.tries):
+	while (attempted < conf.TRIES):
 		try:
 			if multiping(port, machines):
 				success = True
