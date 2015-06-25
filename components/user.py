@@ -78,7 +78,7 @@ def main():
 			dt = (toc - tic)
 			print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_median)
 			print "The correct median is: " + str(cor_median)
-			print "The err is: " + str(abs(approx_median - cor_median))
+			print "The err is: " + str(abs(int(approx_median) - cor_median))
 			print "Total time: " + str(dt)
 			
 		else:

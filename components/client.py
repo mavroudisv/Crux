@@ -49,6 +49,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			print "Request for: " + str(data['request'])
 
 			if data['request'] == 'stat':
+				print "started now!"
 				#parameters
 				contents = data['contents']
 				stat_type = contents['type']
