@@ -114,13 +114,13 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 		#Prepare sockets
 		for cl in clients:	
 			sketches = []
-			for cl_ip in client_ips:	
+			for cl_ip in client_ips:
 				#Fetch data from client as a serialized sketch object
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.setblocking(0)
 				print >>sys.stderr, 'starting up on %s port %s' % (cl_ip, conf.CLIENT_PORT)
-				s.bind((cl_ip, conf.CLIENT_PORT))												
-				s.listen(5) # Listen for incoming connections
+				#s.bind(cl_ip, conf.CLIENT_PORT)
+				#s.listen(5) # Listen for incoming connections
 				outputs.append(s)
 
 
