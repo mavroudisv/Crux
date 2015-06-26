@@ -148,7 +148,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 				print "about to read from"
 				data = SockExt.recv_msg(s)
 				print "red from successfully"
-				print data
+				#print data
 				# A readable client socket has data
 				#print >>sys.stderr, 'received data from %s' % (s.getpeername())
 				inputs.remove(s)
