@@ -116,7 +116,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 		for cl_ip in client_ips:
 			#Fetch data from client as a serialized sketch object
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
-			#s.setblocking(0)
+			s.setblocking(0)
 			print >>sys.stderr, 'starting up on %s port %s' % (cl_ip, conf.CLIENT_PORT)
 			s.connect((cl_ip, conf.CLIENT_PORT))
 			#s.listen(5) # Listen for incoming connections
@@ -134,23 +134,15 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 
 			#Handle outputs
 			for s in writable:
-				#next_msg = message_queues[s].get_nowait()
-				#print >>sys.stderr, 'sending data to %s' %(s.getpeername())
-				print "about to sent request"
 				SockExt.send_msg(s, json.dumps(data))
-				print "req sent"
 				inputs.append(s)
 				outputs.remove(s)
 
 
 			# Handle inputs
 			for s in readable:
-				print "about to read from"
 				data = SockExt.recv_msg(s)
-				print "red from successfully"
 				#print data
-				# A readable client socket has data
-				#print >>sys.stderr, 'received data from %s' % (s.getpeername())
 				inputs.remove(s)
 				s.shutdown(socket.SHUT_RDWR)
 				s.close()
