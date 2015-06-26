@@ -152,7 +152,6 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 				print data
 				# A readable client socket has data
 				#print >>sys.stderr, 'received data from %s' % (s.getpeername())
-				outputs.remove(s)
 				inputs.remove(s)
 				s.shutdown(socket.SHUT_RDWR)
 				s.close()
