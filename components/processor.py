@@ -136,7 +136,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 			#Handle outputs
 			for s in writable:
 				#next_msg = message_queues[s].get_nowait()
-				print >>sys.stderr, 'sending data to %s' %(s.getpeername())
+				#print >>sys.stderr, 'sending data to %s' %(s.getpeername())
 				SockExt.send_msg(s, json.dumps(data))
 				inputs.append(s)
 				outputs.remove(s)
