@@ -8,6 +8,7 @@ import sys
 import math
 import sys
 import traceback
+import threading
 
 from includes import config as conf
 from includes import utilities
@@ -53,14 +54,15 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_3 = attributes['column_3']					
 				
 				#Gather sketches from clients
-				
+				'''
 				sketches = []
 				for cl in clients:
 					sketch = get_sketch_from_client(cl, data)
 					sketches.append(sketch)
+				'''
 				
 				
-				#sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
+				sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
 				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 				
 				
@@ -91,6 +93,84 @@ def median_operation(sk_sum):
 
 	#print "Estimated median: " + str(v)
 	return str(v)
+
+def get_sketches_from_clients_non_blocking(client_ips, data):
+	try:			
+		#Compute sketch parameters
+		tmp_w = int(math.ceil(math.e / conf.EPSILON))
+		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+
+		data['contents']['attributes']['sk_w'] = tmp_w
+		data['contents']['attributes']['sk_d'] = tmp_d
+
+		import select
+		import socket
+		import sys
+		import Queue
+
+		inputs = []
+		outputs = []
+
+		#Prepare sockets
+		for cl in clients:	
+			sketches = []
+			for cl_ip in client_ips:	
+				#Fetch data from client as a serialized sketch object
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.setblocking(0)
+				print >>sys.stderr, 'starting up on %s port %s' % (cl_ip, conf.CLIENT_PORT)
+				s.bind((cl_ip, conf.CLIENT_PORT))												
+				s.listen(5) # Listen for incoming connections
+				outputs.append(s)
+
+
+		# Outgoing message queues (socket:Queue)
+		#message_queues = {}
+
+		while inputs or outputs:
+
+			# Wait for at least one of the sockets to be ready for processing
+			print >>sys.stderr, '\nwaiting for the next event'
+			readable, writable, exceptional = select.select(inputs, outputs, inputs)
+
+			#Handle outputs
+			for s in writable:
+				#next_msg = message_queues[s].get_nowait()
+				print >>sys.stderr, 'sending data to %s' %(s.getpeername())
+				SockExt.send_msg(s, json.dumps(data))
+				inputs.append(s)
+				outputs.remove(s)
+
+
+			# Handle inputs
+			for s in readable:
+				data = SockExt.recv_msg(s)
+				
+				# A readable client socket has data
+				print >>sys.stderr, 'received data from %s' % (s.getpeername())
+				outputs.remove(s)
+				inputs.remove(s)
+				s.shutdown(socket.SHUT_RDWR)
+				s.close()
+
+				obj_json = json.loads(data)
+				contents = json.loads(obj_json['return'])
+				#tmp_w = int(data['vars']['w'])
+				#tmp_d = int(data['vars']['d'])
+				
+				#De-serialize sketch object
+				sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
+				sketch.load_store_list(tmp_w, tmp_d, contents['store'])
+				sketches.append(sketch)
+				
+		############# NON-BLOCKING PART #############
+
+		return sketches
+
+	except Exception as e:
+		print "Exception while getting sketch from client: " + str(e)
+		traceback.print_exc()
+
 
 def get_sketch_from_client(client_ip, data):
 	try:			
