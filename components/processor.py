@@ -138,6 +138,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 				#next_msg = message_queues[s].get_nowait()
 				#print >>sys.stderr, 'sending data to %s' %(s.getpeername())
 				SockExt.send_msg(s, json.dumps(data))
+				print "req sent"
 				inputs.append(s)
 				outputs.remove(s)
 
@@ -145,9 +146,9 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 			# Handle inputs
 			for s in readable:
 				data = SockExt.recv_msg(s)
-				
+				print data
 				# A readable client socket has data
-				print >>sys.stderr, 'received data from %s' % (s.getpeername())
+				#print >>sys.stderr, 'received data from %s' % (s.getpeername())
 				outputs.remove(s)
 				inputs.remove(s)
 				s.shutdown(socket.SHUT_RDWR)
