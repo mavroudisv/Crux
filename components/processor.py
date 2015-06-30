@@ -51,7 +51,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_sheet = attributes['sheet']
 				attr_column_1 = attributes['column_1']
 				attr_column_2 = attributes['column_2']
-				attr_column_3 = attributes['column_3']					
+				attr_column_3 = attributes['column_3']				
 				
 				#Gather sketches from clients
 				'''
@@ -68,14 +68,20 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				#Run selected operation
 				if (stat_type == 'median'):
-					median = median_operation(sk_sum) #Compute median on sum of sketches
-					SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':median}}))
-					print 'Stat computed. Listening for requests...'
-				else:
-					SockExt.send_msg(self.request, json.dumps({'return':{'success':'False'}}))
+					result = median_operation(sk_sum) #Compute median on sum of sketches
+
+				elif (stat_type == 'mean'):
+					result = mean_operation_alt_2(sk_sum) #Compute mean on sum of sketches
+					
+				SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
+				####### All said and done ######
 				
+				print 'Stat computed. Listening for requests...'
+
 		except Exception as e:						
-			print 'Exception on incoming connection: ' + str(e)				
+			SockExt.send_msg(self.request, json.dumps({'return':{'success':'False'}}))
+			print 'Exception on incoming connection: ' + str(e)
+				
 			
 
 #Compute Median	
@@ -93,6 +99,52 @@ def median_operation(sk_sum):
 
 	#print "Estimated median: " + str(v)
 	return str(v)
+	
+
+
+
+
+def mean_operation_alt_2(sk_sum):    
+    try:
+        lower_bound = 0
+        upper_bound = 150
+        
+        keys = [i for i in range(lower_bound, upper_bound)]
+        '''
+        #Get keys
+        keys = []
+        tmp = None
+        for i in range(lower_bound, upper_bound):
+             freq = collective_decryption(sk_sum.estimate(i)[0], auths)
+             if tmp != freq:
+                 keys.append(i)
+                 tmp = freq
+                 
+                 
+        print "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        print len(keys)
+        print "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        '''
+
+        #Now compute
+        enc_sum_mul = (sk_sum.estimate(keys[0])[0]).__rmul__(keys[0])
+        enc_sum = sk_sum.estimate(keys[0])[0]
+        for i in keys[1:]:
+            print "est: " + str(collective_decryption(enc_sum_mul, auths))
+            enc_sum_mul = enc_sum_mul.__add__(sk_sum.estimate(i)[0].__rmul__(i))
+            enc_sum += sk_sum.estimate(i)[0]
+    
+        plain_sum_mul = collective_decryption(enc_sum_mul, auths)
+        plain_sum = collective_decryption(enc_sum, auths)
+    
+        #print plain_sum_mul
+        #print plain_sum
+    
+    except Exception as e:
+        print "Exception while computing mean: ", e
+       
+    return  str(float(plain_sum_mul)/float(plain_sum))
+
 
 def get_sketches_from_clients_non_blocking(client_ips, data):
 	try:			
@@ -206,7 +258,7 @@ def collective_decryption(ct, auths=[]):
 		try:
 			json_obj_str = ct.to_JSON()
 			data = {'request':'decrypt', 'contents': json_obj_str}
-
+			#print data
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((auth, conf.AUTH_PORT)) #connect to authority
 			SockExt.send_msg(s, json.dumps(data))

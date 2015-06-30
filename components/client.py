@@ -62,10 +62,13 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				sk_w = attributes['sk_w']
 				sk_d = attributes['sk_d']
 			
-	
+				print "A"
 				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
+				print "B"
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
-				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from value
+				print "C"
+				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
+				print "D"
 				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
 				print "Request served."
 			else:

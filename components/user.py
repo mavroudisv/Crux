@@ -38,6 +38,10 @@ def remote_decrypt(ip, port, cipher_obj):
 	
 def main():	
 	
+	#print comp_median('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
+	#print comp_variance('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
+
+	
 	action = sys.argv[1]
 	ip = sys.argv[2]
 	port = sys.argv[3]
@@ -59,7 +63,7 @@ def main():
 		print EcPt.from_binary(binascii.unhexlify(result['return']), G)
 		s.close()
 
-	elif len(sys.argv)> 1 and sys.argv[1] == "stat":
+	elif len(sys.argv)> 1 and sys.argv[1] == "median":
 		tic = time.clock()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((ip, int(port)))
@@ -78,7 +82,32 @@ def main():
 			dt = (toc - tic)
 			print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_median)
 			print "The correct median is: " + str(cor_median)
-			print "The err is: " + str(abs(int(approx_median) - cor_median))
+			print "The err is: " + str(abs(float(approx_median) - float(cor_median)))
+			print "Total time: " + str(dt)
+			
+		else:
+			print "Stat could not be computed."
+
+	elif len(sys.argv)> 1 and sys.argv[1] == "mean":
+		tic = time.clock()
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
+		#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+		data = {'request':'stat', 'contents': {'type':'mean', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Lone Parents', 'column_2':'Lone parents not in employment', 'column_3':'2011'}}}
+		SockExt.send_msg(s, json.dumps(data))
+		print "Request Sent"
+		data = json.loads(SockExt.recv_msg(s))
+		print "Response:"
+		result = data['return']
+		
+		if result['success']=='True':
+			approx_mean = result['value']
+			cor_mean = comp_mean('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
+			toc = time.clock()
+			dt = (toc - tic)
+			print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_mean)
+			print "The correct mean is: " + str(cor_mean)
+			print "The err is: " + str(abs(float(approx_mean) - float(cor_mean)))
 			print "Total time: " + str(dt)
 			
 		else:
@@ -96,14 +125,22 @@ def main():
 
 
 def comp_median(fn, sheet, column_1, column_2, column_3):
-	#open xls
 	rows = p.get_rows(fn, sheet, 1, 0) #determine which rows correspond to client
 	values = p.read_xls_cell(fn, sheet, column_1, column_2, column_3, rows) #load values from xls
 	median = numpy.median(values)
-	
-	#return median
 	return median
 
+def comp_mean(fn, sheet, column_1, column_2, column_3):
+	rows = p.get_rows(fn, sheet, 1, 0) #determine which rows correspond to client
+	values = p.read_xls_cell(fn, sheet, column_1, column_2, column_3, rows) #load values from xls
+	mean = numpy.mean(values)
+	return mean
+
+def comp_variance(fn, sheet, column_1, column_2, column_3):
+	rows = p.get_rows(fn, sheet, 1, 0) #determine which rows correspond to client
+	values = p.read_xls_cell(fn, sheet, column_1, column_2, column_3, rows) #load values from xls
+	variance = numpy.variance(values)
+	return variance
 
 
 if __name__ == "__main__":

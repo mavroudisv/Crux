@@ -52,7 +52,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				contents = json.loads(data['contents'])
 				
 				#from pprint import pprint
-				#pprint(contents)
+				#print "--------"
+				#print(contents)
 				
 				try:
 					new_k = Bn.from_hex(contents['k'])
@@ -74,7 +75,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			#self.request.shutdown(socket.SHUT_RDWR)
 			#self.request.close()
 					
-		except Exception, e:		
+		except Exception as e:		
 			print "Exception on incomming connection: ", e
 
 	
