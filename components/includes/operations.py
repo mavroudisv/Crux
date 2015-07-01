@@ -50,8 +50,8 @@ def mean_operation(sk_sum, auths):
             enc_sum_mul = enc_sum_mul.__add__(sk_sum.estimate(i)[0].__rmul__(i))
             enc_sum += sk_sum.estimate(i)[0]
     
-        plain_sum_mul = float(collective_decryption(enc_sum_mul, auths))/float(sk_sum.d)
-        plain_sum = float(collective_decryption(enc_sum, auths))/float(sk_sum.d)
+        plain_sum_mul = float(collective_decryption(enc_sum_mul, auths))
+        plain_sum = float(collective_decryption(enc_sum, auths))
     
         mean = float(plain_sum_mul)/float(plain_sum)
         print "mean: " + str(mean)
@@ -66,7 +66,7 @@ def mean_operation(sk_sum, auths):
 def variance_operation(sk_sum, auths):    
     try:
         lower_bound = 0
-        upper_bound = 120
+        upper_bound = 110
         
         keys = [i for i in range(lower_bound, upper_bound)]
         
@@ -79,8 +79,8 @@ def variance_operation(sk_sum, auths):
             enc_sum_mul = enc_sum_mul.__add__(sk_sum.estimate(i)[0].__rmul__(i))
             enc_sum += sk_sum.estimate(i)[0]
     
-        plain_sum_mul = float(collective_decryption(enc_sum_mul, auths))/float(sk_sum.d)
-        plain_sum = float(collective_decryption(enc_sum, auths))/float(sk_sum.d)
+        plain_sum_mul = float(collective_decryption(enc_sum_mul, auths))
+        plain_sum = float(collective_decryption(enc_sum, auths))
     
         mean = float(plain_sum_mul)/float(plain_sum)
         print "mean: " + str(mean)
@@ -93,10 +93,8 @@ def variance_operation(sk_sum, auths):
         for i in keys:
             #print "est: " + str(collective_decryption(enc_sum_mul, auths))
             tmp_res = (i - mean)**2
-            for j in range(float(collective_decryption(sk_sum.estimate(i)[0], auths))/float(sk_sum.d)):
-                plain_sum_diffs += tmp_res
+            plain_sum_diffs += (tmp_res * float(collective_decryption(sk_sum.estimate(i)[0], auths)))
             
-        N = plain_sum
         
         #Divide with plain_sum
         variance = float(plain_sum_diffs)/float(plain_sum)
