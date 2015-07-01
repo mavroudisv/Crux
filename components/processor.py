@@ -73,6 +73,9 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				elif (stat_type == 'mean'):
 					result = mean_operation_alt_2(sk_sum) #Compute mean on sum of sketches
 					
+				elif (stat_type == 'variance'):
+					result = variance_operation(sk_sum) #Compute mean on sum of sketches	
+					
 				SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 				####### All said and done ######
 				
@@ -99,8 +102,48 @@ def median_operation(sk_sum):
 
 	#print "Estimated median: " + str(v)
 	return str(v)
+
 	
 
+def variance_operation(sk_sum):    
+    try:
+        lower_bound = 0
+        upper_bound = 150
+        
+        keys = [i for i in range(lower_bound, upper_bound)]
+        
+        #Find mean
+        enc_sum_mul = (sk_sum.estimate(keys[0])[0]).__rmul__(keys[0])
+        enc_sum = sk_sum.estimate(keys[0])[0]
+        for i in keys[1:]:
+            print "est: " + str(collective_decryption(enc_sum_mul, auths))
+            enc_sum_mul = enc_sum_mul.__add__(sk_sum.estimate(i)[0].__rmul__(i))
+            enc_sum += sk_sum.estimate(i)[0]
+    
+        plain_sum_mul = collective_decryption(enc_sum_mul, auths)
+        plain_sum = collective_decryption(enc_sum, auths)
+    
+        mean = float(plain_sum_mul)/float(plain_sum)
+        
+        
+        #Sum of differences
+        plain_sum_diffs = 0
+        N = 0
+        for i in keys:
+            #print "est: " + str(collective_decryption(enc_sum_mul, auths))
+            tmp_res = i - mean
+            plain_sum_diffs += tmp_res * tmp_res
+            N += i
+        
+        #Divide with plain_sum
+        variance = float(plain_sum_diffs)/float(N)
+        
+        
+    
+    except Exception as e:
+        print "Exception while computing mean: ", e
+       
+    return  str(variance)
 
 
 

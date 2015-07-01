@@ -113,6 +113,29 @@ def main():
 		else:
 			print "Stat could not be computed."
 
+	elif len(sys.argv)> 1 and sys.argv[1] == "variance":
+		tic = time.clock()
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
+		data = {'request':'stat', 'contents': {'type':'variance', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Lone Parents', 'column_2':'Lone parents not in employment', 'column_3':'2011'}}}
+		SockExt.send_msg(s, json.dumps(data))
+		print "Request Sent"
+		data = json.loads(SockExt.recv_msg(s))
+		print "Response:"
+		result = data['return']
+		
+		if result['success']=='True':
+			approx_variance = result['value']
+			cor_variance = comp_variance('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
+			toc = time.clock()
+			dt = (toc - tic)
+			print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_variance)
+			print "The correct variance is: " + str(cor_variance)
+			print "The err is: " + str(abs(float(approx_variance) - float(cor_variance)))
+			print "Total time: " + str(dt)
+			
+		else:
+			print "Stat could not be computed."
 
 	elif len(sys.argv)> 1 and sys.argv[1] == "encdec":
 
@@ -139,7 +162,7 @@ def comp_mean(fn, sheet, column_1, column_2, column_3):
 def comp_variance(fn, sheet, column_1, column_2, column_3):
 	rows = p.get_rows(fn, sheet, 1, 0) #determine which rows correspond to client
 	values = p.read_xls_cell(fn, sheet, column_1, column_2, column_3, rows) #load values from xls
-	variance = numpy.variance(values)
+	variance = numpy.var(values)
 	return variance
 
 
