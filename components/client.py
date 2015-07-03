@@ -36,47 +36,57 @@ class TCPServer(SocketServer.ThreadingTCPServer):
 
 
 class TCPServerHandler(SocketServer.BaseRequestHandler):
-	def handle(self):
-		global G
-		global priv
-		global pub
-		global auths
-		global common_key
+	def handle(self):	
 		
-		try:
-			inp = SockExt.recv_msg(self.request).strip()				
-			data = json.loads(inp)
-			print "Request for: " + str(data['request'])
-
-			if data['request'] == 'stat':
-				#print data['contents']
-				#parameters
-				contents = data['contents']
-				stat_type = contents['type']
-				attributes = contents['attributes']
-				attr_file = attributes['file']
-				attr_sheet = attributes['sheet']
-				attr_column_1 = attributes['column_1']
-				attr_column_2 = attributes['column_2']
-				attr_column_3 = attributes['column_3']
-				sk_w = attributes['sk_w']
-				sk_d = attributes['sk_d']
+		from pycallgraph import PyCallGraph
+		from pycallgraph.output import GraphvizOutput
+		from pycallgraph import Config
+		DEPTH = 5
+		config = Config(max_depth=DEPTH)
+		graphviz = GraphvizOutput()
+		graphviz.output_file = 'trimmed_graph_client.png'
+		with PyCallGraph(output=graphviz, config=config):			
+			global G
+			global priv
+			global pub
+			global auths
+			global common_key
 			
-				print "A"
-				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
-				print "B"
-				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
-				print "C"
-				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
-				print "D"
-				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
-				print "Request served."
-			else:
-				print "Unknown request type."
+			try:
+				inp = SockExt.recv_msg(self.request).strip()				
+				data = json.loads(inp)
+				print "Request for: " + str(data['request'])
+
+				if data['request'] == 'stat':
+					#print data['contents']
+					#parameters
+					contents = data['contents']
+					stat_type = contents['type']
+					attributes = contents['attributes']
+					attr_file = attributes['file']
+					attr_sheet = attributes['sheet']
+					attr_column_1 = attributes['column_1']
+					attr_column_2 = attributes['column_2']
+					attr_column_3 = attributes['column_3']
+					sk_w = attributes['sk_w']
+					sk_d = attributes['sk_d']
 				
+					print "A"
+					rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
+					print "B"
+					values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
+					print "C"
+					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
+					print "D"
+					SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+					print "Request served."
+					self.server.shutdown()
+				else:
+					print "Unknown request type."
 					
-		except Exception, e:
-			print "Exception on incomming connection: ", e
+						
+			except Exception, e:
+				print "Exception on incomming connection: ", e
 
 
 

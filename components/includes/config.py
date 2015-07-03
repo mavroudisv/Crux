@@ -12,9 +12,12 @@ DELTA = 0.0005
 
 
 #Ping settings
-TRIES = 5
-
+TRIES = 1
 
 #Files
 FN_I_TABLE = 'data/i_table.db'
 FN_N_TABLE = 'data/n_table.db'
+
+
+#Optimizations
+COMPRESS = False

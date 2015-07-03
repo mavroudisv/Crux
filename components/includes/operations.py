@@ -16,6 +16,7 @@ import Classes
 import SocketExtend as SockExt
 import operations as op
 
+
 #Compute Median	
 def median_operation(sk_sum, auths):
 	proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20) #Compute Median
@@ -99,8 +100,6 @@ def variance_operation(sk_sum, auths):
         #Divide with plain_sum
         variance = float(plain_sum_diffs)/float(plain_sum)
         
-        
-    
     except Exception as e:
         print "Exception while computing mean: ", e
        

@@ -8,7 +8,8 @@ import sys
 import math
 import sys
 import traceback
-import threading
+import sys
+
 
 from includes import config as conf
 from includes import utilities
@@ -72,6 +73,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 				
 				print 'Stat computed. Listening for requests...'
+				#self.server.shutdown()
+
 
 		except Exception as e:						
 			SockExt.send_msg(self.request, json.dumps({'return':{'success':'False'}}))
@@ -150,6 +153,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 		traceback.print_exc()
 
 
+
 def get_sketch_from_client(client_ip, data):
 	try:			
 		#Compute sketch parameters
@@ -196,11 +200,18 @@ def load():
 	auths = auths_str.split('-')
 	clients = clients_str.split('-')
     
+    
+    #profiler = sys.argv[3]
+	from pycallgraph import PyCallGraph
+	from pycallgraph.output import GraphvizOutput
+	
 	if utilities.alive(conf.AUTH_PORT, auths):
 		print "Authorities responsive. Listening..."
-		listen_on_port(conf.PROCESSOR_PORT)	
+		with PyCallGraph(output=GraphvizOutput()):
+			listen_on_port(conf.PROCESSOR_PORT)
 	else:
 		print "Not all authorities are responsive."
+	
 
 if __name__ == "__main__":
     load()

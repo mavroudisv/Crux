@@ -27,7 +27,7 @@ def multiping(port, auths=[]):
 	result = True
 	for a_ip in auths:	
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		#s.settimeout(120.0)
+		#sock.settimeout(120.0)
 		sock.connect((a_ip, int(port)))
 		if not ping(sock):
 			result = False

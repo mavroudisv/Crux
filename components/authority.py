@@ -88,7 +88,10 @@ def load():
 	priv = G.order().random()
 	pub= priv * G.generator()
 	print "Generated public key is: " + str(pub)
-	listen_on_port(conf.AUTH_PORT)	
+	from pycallgraph import PyCallGraph
+	from pycallgraph.output import GraphvizOutput
+	with PyCallGraph(output=GraphvizOutput()):
+		listen_on_port(conf.AUTH_PORT)	
 
 if __name__ == "__main__":
     load()
