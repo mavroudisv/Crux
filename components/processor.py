@@ -35,7 +35,8 @@ class TCPServer(SocketServer.ThreadingTCPServer):
 	allow_reuse_address = True
 
 class TCPServerHandler(SocketServer.BaseRequestHandler):
-	def handle(self):
+	
+	def handle_clean(self):
 		try:
 			data = json.loads(SockExt.recv_msg(self.request).strip())
 			print "Request for: " + str(data['request'])
@@ -73,13 +74,66 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 				
 				print 'Stat computed. Listening for requests...'
-				#self.server.shutdown()
+				
+				if conf.MEASUREMENT_MODE_PROCESSOR:
+					self.server.shutdown()
 
 
 		except Exception as e:						
 			SockExt.send_msg(self.request, json.dumps({'return':{'success':'False'}}))
 			print 'Exception on incoming connection: ' + str(e)
 				
+				
+	def handle(self):
+		if conf.MEASUREMENT_MODE_PROCESSOR:
+			
+			if conf.PROFILER == 'cProfiler':
+				import cProfile
+				import pstats
+				pr = cProfile.Profile()
+				pr.enable()
+				self.handle_clean()
+				pr.disable()
+				
+				#pr.dump_stats(conf.PROF_FILE_PROCESSOR + "pickle") #pickled
+				
+				#readable
+				sortby = 'cumulative'
+				ps = pstats.Stats(pr, stream=open(conf.PROF_FILE_PROCESSOR + "txt", 'w')).sort_stats(sortby)
+				ps.print_stats()
+				
+				
+			elif conf.PROFILER == 'LineProfiler':
+				import line_profiler
+				import pstats
+				import io
+				pr = line_profiler.LineProfiler(self.handle_clean, get_sketches_from_clients_non_blocking
+					, Classes.CountSketchCt.aggregate, op.median_operation, op.mean_operation, op.variance_operation)
+				pr.enable()
+				self.handle_clean()
+				pr.disable()
+				
+				pr.print_stats(open(conf.PROF_FILE_PROCESSOR + "txt", 'w')) #readable
+				#pr.dump_stats(conf.PROF_FILE_PROCESSOR + "pickle") #pickled
+
+	
+			elif conf.PROFILER == "viz":
+				from pycallgraph import PyCallGraph
+				from pycallgraph.output import GraphvizOutput
+				from pycallgraph import Config
+				DEPTH = 3
+				config = Config(max_depth=DEPTH)
+				graphviz = GraphvizOutput()
+				graphviz.output_file = conf.PROF_FILE_PROCESSOR + 'png'
+				with PyCallGraph(output=graphviz, config=config):
+					self.handle_clean()
+
+			else:
+				self.handle_clean()
+				
+		else:
+			self.handle_clean()		
+		
 			
 
 def get_sketches_from_clients_non_blocking(client_ips, data):
@@ -207,8 +261,7 @@ def load():
 	
 	if utilities.alive(conf.AUTH_PORT, auths):
 		print "Authorities responsive. Listening..."
-		with PyCallGraph(output=GraphvizOutput()):
-			listen_on_port(conf.PROCESSOR_PORT)
+		listen_on_port(conf.PROCESSOR_PORT)
 	else:
 		print "Not all authorities are responsive."
 	
