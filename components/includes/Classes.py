@@ -268,14 +268,17 @@ class CountSketchCt(object):
 
     def insert(self, item):
         """ Insert an element into the encrypted count sketch """
-
-        item = str(item)
-        h = hashes(item, self.d)
-        for di in range(self.d):
-            self.store[di][h[di] % self.w] += 1 
+        try:
+            item = str(item)
+            h = hashes(item, self.d)
+            for di in range(self.d):
+                self.store[di][h[di] % self.w] += 1 
  
-        self.store[di][h[di] % self.w].self_check()
- 
+            self.store[di][h[di] % self.w].self_check()
+        except Exception, e:
+           print "Exception on incomming connection: ", e
+			
+			
     def estimate(self, item):
         """ Estimate the frequency of one value """
 

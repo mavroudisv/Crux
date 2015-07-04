@@ -67,9 +67,6 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				print "B"
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
 				print "C"
-				print int(sk_w)
-				print int(sk_d)
-				print values[100]
 				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
 				print "D"
 				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
@@ -81,7 +78,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				print "Unknown request type."
 				
 					
-		except Exception, e:
+		except Exception as e:
 			print "Exception on incomming connection: ", e
 	
 	
