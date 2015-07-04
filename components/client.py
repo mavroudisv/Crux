@@ -138,9 +138,15 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
-	sk = Classes.CountSketchCt(w, d, common_key)
-	for v in values:
-		sk.insert(int(v))	
+	
+	try:
+		sk = Classes.CountSketchCt(w, d, common_key)
+		for v in values:
+			sk.insert(int(v))	
+			
+	except Exception, e:
+		print "Exception on insert: ", e		
+		
 	return sk
 
 
