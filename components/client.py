@@ -97,7 +97,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				#readable
 				sortby = 'cumulative'
-				ps = pstats.Stats(pr, stream=open(conf.PROF_FILE_CLIENT + "txt", 'w')).sort_stats(sortby)
+				ps = pstats.Stats(pr, stream=open(conf.PROF_FILE_CLIENT + "prof", 'w')).sort_stats(sortby)
 				ps.print_stats()
 				
 				
@@ -111,7 +111,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				self.handle_clean()
 				pr.disable()
 				
-				pr.print_stats(open(conf.PROF_FILE_CLIENT + "txt", 'w')) #readable
+				pr.print_stats(open(conf.PROF_FILE_CLIENT + "prof", 'w')) #readable
 				#pr.dump_stats(conf.PROF_FILE_CLIENT + "pickle") #pickled
 
 	
