@@ -1,6 +1,6 @@
 #Port Settings
-AUTH_PORT = 6666
-CLIENT_PORT= 7777
+AUTH_PORT = 8888
+CLIENT_PORT= 8888
 PROCESSOR_PORT=8888
 
 #Crypto settings
@@ -33,7 +33,7 @@ MEASUREMENT_MODE_USER = False
 PROFILER = "cProfiler"
 
 PROF_FILE_PROCESSOR = "../profiling_results/prof_proc."
-PROF_FILE_CLIENT = "prof_client."
-PROF_FILE_AUTHORITY = "prof_auth."
-PROF_FILE_USER = "prof_user."
+PROF_FILE_CLIENT = "../profiling_results/prof_client."
+PROF_FILE_AUTHORITY = "../profiling_results/prof_auth."
+PROF_FILE_USER = "../profiling_results/prof_user."
 
