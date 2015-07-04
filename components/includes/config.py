@@ -12,7 +12,7 @@ DELTA = 0.0005
 
 
 #Ping settings
-TRIES = 1
+TRIES = 5
 
 #Files
 FN_I_TABLE = 'data/i_table.db'
