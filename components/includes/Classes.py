@@ -275,7 +275,7 @@ class CountSketchCt(object):
                 self.store[di][h[di] % self.w] += 1 
  
             self.store[di][h[di] % self.w].self_check()
-        except Exception, e:
+        except Exception as e:
            print "Exception on insert: ", e
 			
 			
