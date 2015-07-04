@@ -84,34 +84,48 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 	
 	def handle(self):
 		if conf.MEASUREMENT_MODE_CLIENT:
+	
 			if conf.PROFILER == 'cProfiler':
 				import cProfile
-				#cProfile.run("self.handle_clean()", sort="tottime")
-				cProfile.runctx('self.handle_clean()', globals(), locals(), sort="tottime")
+				import pstats
+				pr = cProfile.Profile()
+				pr.enable()
+				self.handle_clean()
+				pr.disable()
+				
+				#pr.dump_stats(conf.PROF_FILE_CLIENT + "pickle") #pickled
+				
+				#readable
+				sortby = 'cumulative'
+				ps = pstats.Stats(pr, stream=open(conf.PROF_FILE_CLIENT + "txt", 'w')).sort_stats(sortby)
+				ps.print_stats()
+				
 				
 			elif conf.PROFILER == 'LineProfiler':
 				import line_profiler
-				import sys
 				import pstats
-				profiler = line_profiler.LineProfiler(self.handle_clean, get_sketches_from_clients_non_blocking
+				import io
+				pr = line_profiler.LineProfiler(self.handle_clean, get_sketches_from_clients_non_blocking
 					, Classes.CountSketchCt.aggregate, op.median_operation, op.mean_operation, op.variance_operation)
-				profiler.enable_by_count()
+				pr.enable()
 				self.handle_clean()
-				old_stdout = sys.stdout
-				sys.stdout = open(conf.PROF_FILE_CLIENT + "txt", 'w')
-				profiler.print_stats()
-				sys.stdout = old_stdout
+				pr.disable()
+				
+				pr.print_stats(open(conf.PROF_FILE_CLIENT + "txt", 'w')) #readable
+				#pr.dump_stats(conf.PROF_FILE_CLIENT + "pickle") #pickled
+
 	
 			elif conf.PROFILER == "viz":
 				from pycallgraph import PyCallGraph
 				from pycallgraph.output import GraphvizOutput
 				from pycallgraph import Config
-				DEPTH = 2
+				DEPTH = 3
 				config = Config(max_depth=DEPTH)
 				graphviz = GraphvizOutput()
-				graphviz.output_file = conf.PROF_FILE_CLIENT + '.png'
+				graphviz.output_file = conf.PROF_FILE_CLIENT + 'png'
 				with PyCallGraph(output=graphviz, config=config):
 					self.handle_clean()
+
 
 			else:
 				self.handle_clean()

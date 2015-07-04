@@ -32,7 +32,7 @@ MEASUREMENT_MODE_CLIENT = False
 MEASUREMENT_MODE_USER = False
 PROFILER = "cProfiler"
 
-PROF_FILE_PROCESSOR = "prof_proc."
+PROF_FILE_PROCESSOR = "../profiling_results/prof_proc."
 PROF_FILE_CLIENT = "prof_client."
 PROF_FILE_AUTHORITY = "prof_auth."
 PROF_FILE_USER = "prof_user."
