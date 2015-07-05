@@ -20,7 +20,7 @@ FN_N_TABLE = 'data/n_table.db'
 
 
 #Optimizations
-COMPRESS = False
+COMPRESS = True
 
 
 FAST_PARSING = False
