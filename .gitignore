@@ -3,3 +3,5 @@ main.py
 *.pyc
 *.fuse*
 *.prof
+*db
+tools
