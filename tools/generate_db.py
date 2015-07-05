@@ -6,7 +6,7 @@ from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
 
-def _make_table(start=-200000, end=2000):
+def _make_table(start=-200000, end=1000000):
     G = EcGroup(nid=713)
     g = G.generator()
     o = G.order()
