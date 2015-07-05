@@ -141,12 +141,14 @@ def generate_sketch(w, d, values=[]):
 	
 	try:
 		sk = Classes.CountSketchCt(w, d, common_key)
-		for v in values:
-			sk.insert(int(v))	
-			
 	except Exception as e:
-		print "Exception on insert: ", e		
-		
+		print "Exception during sketch generation: ", e
+		print w
+		print d
+	
+	for v in values:
+		sk.insert(int(v))	
+	
 	return sk
 
 
