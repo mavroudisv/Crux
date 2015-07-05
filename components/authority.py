@@ -85,6 +85,13 @@ def load():
 	global priv
 	global pub	
 
+	print "Checking modules..."
+	if (Classes.unit_tests()):
+		print "Success! Loading..."
+	else:
+		print "Errors occurred. Aborting."
+		return
+
 	priv = G.order().random()
 	pub= priv * G.generator()
 	print "Generated public key is: " + str(pub)

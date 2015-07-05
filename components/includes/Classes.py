@@ -375,16 +375,20 @@ def get_median(cs, min_b = 0, max_b = 1000, steps = 20):
 
 
 ########Tests#########
+def unit_tests():
+    return CountSketchCt_unit_test() #&& XXX && XX
 
 def CountSketchCt_unit_test():
-    G = EcGroup()
-    x = G.order().random()
-    y = x * G.generator()
-    
-    cs = CountSketchCt(50, 7, y)
-    cs.insert(11)
-    c, d = cs.estimate(11)
-    est = c.dec(x)
-    print(est)
-    print d
-    assert est == d
+    try:
+        G = EcGroup()
+        x = G.order().random()
+        y = x * G.generator()
+		
+        cs = CountSketchCt(50, 7, y)
+        cs.insert(11)
+        c, d = cs.estimate(11)
+        est = c.dec(x)
+        #assert est == d
+        return est == d
+    except Exception:
+        return False
