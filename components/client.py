@@ -144,7 +144,7 @@ def generate_sketch(w, d, values=[]):
 		for v in values:
 			sk.insert(int(v))	
 			
-	except Exception, e:
+	except Exception as e:
 		print "Exception on insert: ", e		
 		
 	return sk
