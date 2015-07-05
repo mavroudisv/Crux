@@ -1,6 +1,5 @@
 automation
 main.py
 *.pyc
-tools
 *.fuse*
 *.prof
