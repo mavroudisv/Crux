@@ -1,6 +1,6 @@
 #Port Settings
-AUTH_PORT = 8888
-CLIENT_PORT= 8888
+AUTH_PORT = 6666
+CLIENT_PORT= 7777
 PROCESSOR_PORT=8888
 
 #Crypto settings
@@ -27,10 +27,10 @@ FAST_PARSING = False
 
 #Measurements
 MEASUREMENT_MODE_AUTHORITY = False
-MEASUREMENT_MODE_PROCESSOR = False
+MEASUREMENT_MODE_PROCESSOR = True
 MEASUREMENT_MODE_CLIENT = False
 MEASUREMENT_MODE_USER = False
-PROFILER = "cProfiler"
+PROFILER = "viz"
 
 PROF_FILE_PROCESSOR = "../profiling_results/prof_proc."
 PROF_FILE_CLIENT = "../profiling_results/prof_client."
