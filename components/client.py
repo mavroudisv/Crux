@@ -144,7 +144,7 @@ def generate_sketch(w, d, values=[]):
 	except Exception as e:
 		print "Exception during sketch generation: ", e
 		print w
-		print d
+		print common_key
 	
 	for v in values:
 		sk.insert(int(v))	
@@ -157,7 +157,7 @@ def generate_group_key(auths=[]):
 	pub_keys = []
 	for auth_ip in auths: #get pub key from each auth
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.settimeout(10.0)
+		#s.settimeout(10.0)
 		s.connect((auth_ip, conf.AUTH_PORT))
 		data = {'request':'pubkey'}
 		SockExt.send_msg(s, json.dumps(data))
