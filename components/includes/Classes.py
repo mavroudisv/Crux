@@ -28,6 +28,7 @@ def load_table():
 G = EcGroup(nid=conf.EC_GROUP)
 _table, _n_table = load_table()
 
+
 class Ct:
 
     @staticmethod
@@ -371,3 +372,19 @@ def get_median(cs, min_b = 0, max_b = 1000, steps = 20):
             yield cand_median
             return 
 
+
+
+########Tests#########
+
+def CountSketchCt_unit_test():
+    G = EcGroup()
+    x = G.order().random()
+    y = x * G.generator()
+    
+    cs = CountSketchCt(50, 7, y)
+    cs.insert(11)
+    c, d = cs.estimate(11)
+    est = c.dec(x)
+    print(est)
+    print d
+    assert est == d
