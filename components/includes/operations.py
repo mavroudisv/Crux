@@ -67,7 +67,7 @@ def mean_operation(sk_sum, auths):
 def variance_operation(sk_sum, auths):    
     try:
         lower_bound = 0
-        upper_bound = 110
+        upper_bound = 120
         
         keys = [i for i in range(lower_bound, upper_bound)]
         
