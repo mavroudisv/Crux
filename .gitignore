@@ -3,5 +3,8 @@ main.py
 *.pyc
 *.fuse*
 *.prof
-*db
+*.db
 tools
+
+
+ 

@@ -6,7 +6,7 @@ from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
 
-def _make_table(start=-20000, end=1000000):
+def _make_table(start=-200000, end=2000000):
     G = EcGroup(nid=713)
     g = G.generator()
     o = G.order()
@@ -27,8 +27,8 @@ def _make_table(start=-20000, end=1000000):
 
 
 def generate_dbs():
-    db_i_table = bsddb.btopen("i_table.db", 'c')
-    db_n_table = bsddb.btopen("n_table.db", 'c')
+    db_i_table = bsddb.btopen("../components/data/i_table.db", 'c')
+    db_n_table = bsddb.btopen("../components/data/n_table.db", 'c')
     
     i_table, n_table = _make_table()
     
