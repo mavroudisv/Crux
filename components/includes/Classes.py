@@ -277,6 +277,7 @@ class CountSketchCt(object):
             self.store[di][h[di] % self.w].self_check()
         except Exception as e:
            print "Exception on insert: ", e
+           print item
 			
 			
     def estimate(self, item):
