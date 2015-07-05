@@ -2,8 +2,5 @@ automation
 main.py
 *.pyc
 tools
-*.db
-*i_table.db
-*n_table.db
 *.fuse*
 *.prof
