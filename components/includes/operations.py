@@ -47,7 +47,7 @@ def mean_operation(sk_sum, auths):
         enc_sum = sk_sum.estimate(keys[0])[0]
         
         for i in keys[1:]:
-            print "est: " + str(collective_decryption(enc_sum_mul, auths))
+            #print "est: " + str(collective_decryption(enc_sum_mul, auths)) #To check if it exceeds the db size
             enc_sum_mul = enc_sum_mul.__add__(sk_sum.estimate(i)[0].__rmul__(i))
             enc_sum += sk_sum.estimate(i)[0]
     
