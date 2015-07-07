@@ -29,6 +29,13 @@ G = EcGroup(nid=conf.EC_GROUP)
 _table, _n_table = load_table()
 
 
+def bn_sum(bn_list = []):
+    bn_sum = Bn(0)
+    for num in bn_list:
+        bn_sum += num
+    
+    return bn_sum
+
 class Ct:
 
     @staticmethod
@@ -45,17 +52,16 @@ class Ct:
             return Ct(pub, a, b, k, m)
             
         else:
-            o = pub.group.order()
-            if m.k is None:
-			    k = o.random()
-            else: 
-            	k = m.k
-            
-            g = pub.group.generator()
-            a = k * g	
-            b = m.b + (k * pub)
-            return Ct(pub, a, b, k, None)
-
+            """ Produce a ciphertext, from a public key and another ciphertext """
+            #print "m.m: " + str(m.m)
+            try:
+                k = m.k
+                g = pub.group.generator()
+                a = k * g
+                b = m.b + (k * pub)
+                return Ct(pub, a, b, k, None)
+            except Exception as e:
+                print "Exception while encrypting ct: " + str(e)
 
     def dec(self, x):
         """ Decrypt a ciphertext using a secret key """
@@ -95,16 +101,17 @@ class Ct:
 
         new_k = None
         try:
-         new_k = str(self.k.hex())
+             new_k = str(self.k.hex())
         except:
-			pass
+            pass
 
         new_m = None
         try:
-         new_m = str(self.m.hex())
+            new_m = str(self.m.hex())
         except:
-			pass
-	  
+            pass
+        
+        #print "k: " + str(new_k)
         data = {'a':hexlify(self.a.export()), 'b':hexlify(self.b.export()), 'k':new_k, 'm':new_m, 'pub':hexlify(self.pub.export())}
         return json.dumps(data)
 
@@ -152,11 +159,22 @@ class Ct:
         # w = [Bn(1) for _ in range(len(elist))]
         as_l = [e.a for e in elist]
         bs_l = [e.b for e in elist]
-
+        ks_l = [e.k for e in elist]
+        ms_l = [e.m for e in elist]
+        
+        #from pprint import pprint
+        #pprint(ks_l)
+        
         new_a = G.sum(as_l)
         new_b = G.sum(bs_l)
+        try:
+            new_k = bn_sum(ks_l)
+        except Exception as e:
+            print "Exception in sum of Cts: " + str(e)        
+            
+        new_m = bn_sum(ms_l)
 
-        return Ct(pub, new_a, new_b)
+        return Ct(pub, new_a, new_b, new_k, new_m)
 
     def __rmul__(self, other):
         """ Multiples an integer with a Ciphertext """
@@ -262,7 +280,7 @@ class CountSketchCt(object):
     
          for i in range(self.d):
              for j in range(self.w):
-				 print self.store[i][j].a           
+				 print self.store[i][j].k           
 				 print "---------"
 
     def dump(self):
@@ -421,6 +439,9 @@ def Ct_dec_unit_test():
     
         x_2 = G.order().random()
         y_2 = x_2 * G.generator()
+
+        x_3 = G.order().random()
+        y_3 = x_3 * G.generator()
     
         #
         E1 = Ct.enc(y_1+y_2, 2)
@@ -430,11 +451,11 @@ def Ct_dec_unit_test():
         
         #
         E3 = Ct.enc(y_1, 22)
-        E4 = Ct.enc(y_2, E3)
+        E4 = Ct.enc(y_2+y_3, E3)
         E5 = copy(E4)
         E5.b = E4.partial_dec(x_1)
         
-        return ((E.dec(x_2) == 2) and (E1.dec(x_1+x_2) == 2) and (E5.dec(x_2)==22))
+        return ((E.dec(x_2) == 2) and (E1.dec(x_1+x_2) == 2) and (E5.dec(x_2+x_3)==22))
         
     except Exception:
         return False

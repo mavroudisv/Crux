@@ -119,8 +119,9 @@ def process_request(data, obj):
 	
 
 	sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
+	sketches[0].print_details()
 	sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
-	
+	sk_sum.print_details()
 	
 	#Run selected operation
 	if (stat_type == 'median'):

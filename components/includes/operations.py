@@ -26,7 +26,6 @@ def median_operation(sk_sum, auths):
 		if isinstance(v, int):
 			break
 		
-		#print v
 		plain = collective_decryption(v, auths)
 		#print "*: " + str(plain)
 
@@ -118,7 +117,7 @@ def collective_decryption(ct, auths=[]):
 		#Encrypt with ephimeral key
 		enc_ct = Classes.Ct.enc(tmp_pub, ct)
 		print "C"
-
+		print "ct.m: " + str(enc_ct.m)
 		for auth in auths: #Send for decryption to each authority
 			print "D"
 			json_obj_str = enc_ct.to_JSON()
