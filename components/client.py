@@ -165,8 +165,9 @@ def generate_group_key(auths=[]):
 	#Add keys
 	c_pub = pub_keys[0]
 	for pkey in pub_keys[1:]:
+		print c_pub
 		c_pub += pkey #pub is ecpt, so we add
-   
+	print c_pub
 	return c_pub
 
 

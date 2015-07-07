@@ -108,15 +108,14 @@ def variance_operation(sk_sum, auths):
 def collective_decryption(ct, auths=[]):
 	
 	try:
-		print "A"
 		#Generate ephimeral key
 		G = EcGroup(nid=conf.EC_GROUP)
 		tmp_priv = G.order().random()
 		tmp_pub = tmp_priv * G.generator()
-		print "B"
+
 		#Encrypt with ephimeral key
 		enc_ct = Classes.Ct.enc(tmp_pub, ct)
-		print "C"
+
 		print "ct.m: " + str(enc_ct.m)
 		for auth in auths: #Send for decryption to each authority
 			print "D"
