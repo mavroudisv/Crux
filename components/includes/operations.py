@@ -107,21 +107,42 @@ def variance_operation(sk_sum, auths):
 
 
 def collective_decryption(ct, auths=[]):
-	for auth in auths:
-		try:
-			json_obj_str = ct.to_JSON()
-			data = {'request':'decrypt', 'contents': json_obj_str}
+	
+	try:
+		print "A"
+		#Generate ephimeral key
+		G = EcGroup(nid=conf.EC_GROUP)
+		tmp_priv = G.order().random()
+		tmp_pub = tmp_priv * G.generator()
+		print "B"
+		#Encrypt with ephimeral key
+		enc_ct = Classes.Ct.enc(tmp_pub, ct)
+		print "C"
+
+		for auth in auths: #Send for decryption to each authority
+			print "D"
+			json_obj_str = enc_ct.to_JSON()
+			data = {'request':'partial_decrypt', 'contents': json_obj_str}
 			#print data
+			
+			print "E"
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((auth, conf.AUTH_PORT)) #connect to authority
 			SockExt.send_msg(s, json.dumps(data))
-			
+			print "F"
 			result = json.loads(SockExt.recv_msg(s))
+			enc_ct.b = EcPt.from_binary(binascii.unhexlify(result['return']),G)
+			print "G"
 			s.shutdown(socket.SHUT_RDWR)
 			s.close()
-
-			return result['return']
 			
-		except Exception as e:
-			print "Exception during collective decryption: ", e
-			return None
+			
+		#Decrypt using the ephimeral private key
+		print "H"
+		value = enc_ct.dec(tmp_priv) #decrypt ct
+		print "Z"
+		return value
+			
+	except Exception as e:
+		print "Exception during collective decryption: ", e
+		return None

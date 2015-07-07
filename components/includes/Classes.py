@@ -37,12 +37,24 @@ class Ct:
         if isinstance(m, int):
             m = Bn(m)
 
-        o = pub.group.order()
-        k = o.random()
-        g = pub.group.generator()
-        a = k * g
-        b = k * pub + EcPt.from_binary(binascii.unhexlify(_n_table[str((o + m) % o)]), G) # m * g
-        return Ct(pub, a, b, k, m) 
+            o = pub.group.order()
+            k = o.random()
+            g = pub.group.generator()
+            a = k * g
+            b = k * pub + EcPt.from_binary(binascii.unhexlify(_n_table[str((o + m) % o)]), G) # m * g
+            return Ct(pub, a, b, k, m)
+            
+        else:
+            o = pub.group.order()
+            if m.k is None:
+			    k = o.random()
+            else: 
+            	k = m.k
+            
+            g = pub.group.generator()
+            a = k * g	
+            b = m.b + (k * pub)
+            return Ct(pub, a, b, k, None)
 
 
     def dec(self, x):
@@ -55,6 +67,13 @@ class Ct:
             self.self_check()
             print("Failed to decrypt: %s" % self.m )
             raise e
+
+
+    def partial_dec(self, x):
+        """ Partially decrypt a ciphertext using a secret key """
+        hm = self.b - x * self.a
+        return hm
+
 
     def __init__(self, pub, a, b, k=None, m=None):
         """ Produce a ciphertext, from its parts """
@@ -93,9 +112,9 @@ class Ct:
         """ Runs a self check """
         if self.k is not None and self.m is not None:
             g = self.pub.group.generator()
-                          
             assert self.a == self.k * g
             assert self.b == self.k * self.pub + self.m * g
+
 
 
     def __add__(self, other):
@@ -376,7 +395,7 @@ def get_median(cs, min_b = 0, max_b = 1000, steps = 20):
 
 ########Tests#########
 def unit_tests():
-    return CountSketchCt_unit_test() #&& XXX && XX
+    return CountSketchCt_unit_test() and Ct_dec_unit_test()
 
 def CountSketchCt_unit_test():
     try:
@@ -392,3 +411,31 @@ def CountSketchCt_unit_test():
         return est == d
     except Exception:
         return False
+        
+        
+def Ct_dec_unit_test():
+    try:	
+        G = EcGroup()
+        x_1 = G.order().random()
+        y_1 = x_1 * G.generator()
+    
+        x_2 = G.order().random()
+        y_2 = x_2 * G.generator()
+    
+        #
+        E1 = Ct.enc(y_1+y_2, 2)
+        E = copy(E1)
+        E.b = E1.partial_dec(x_1)
+        
+        
+        #
+        E3 = Ct.enc(y_1, 22)
+        E4 = Ct.enc(y_2, E3)
+        E5 = copy(E4)
+        E5.b = E4.partial_dec(x_1)
+        
+        return ((E.dec(x_2) == 2) and (E1.dec(x_1+x_2) == 2) and (E5.dec(x_2)==22))
+        
+    except Exception:
+        return False
+        

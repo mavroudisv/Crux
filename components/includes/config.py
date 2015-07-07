@@ -20,17 +20,17 @@ FN_N_TABLE = 'data/n_table.db'
 
 
 #Optimizations
-COMPRESS = True
+COMPRESS = False
 
 
 FAST_PARSING = False
 
 #Measurements
 MEASUREMENT_MODE_AUTHORITY = False
-MEASUREMENT_MODE_PROCESSOR = True
+MEASUREMENT_MODE_PROCESSOR = False
 MEASUREMENT_MODE_CLIENT = False
 MEASUREMENT_MODE_USER = False
-PROFILER = "viz"
+PROFILER = "cProfiler"
 
 PROF_FILE_PROCESSOR = "../profiling_results/prof_proc."
 PROF_FILE_CLIENT = "../profiling_results/prof_client."

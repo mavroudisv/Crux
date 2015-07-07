@@ -46,37 +46,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				SockExt.send_msg(self.request, json.dumps({'return': contents['value']}))
 			
 			elif data['request'] == 'stat':
-				#parameters
-				contents = data['contents']
-				stat_type = contents['type']
-				attributes = contents['attributes']
-				attr_file = attributes['file']
-				attr_sheet = attributes['sheet']
-				attr_column_1 = attributes['column_1']
-				attr_column_2 = attributes['column_2']
-				attr_column_3 = attributes['column_3']
-				
-
-				sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
-				sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
-				
-				
-				#Run selected operation
-				if (stat_type == 'median'):
-					result = op.median_operation(sk_sum, auths) #Compute median on sum of sketches
-
-				elif (stat_type == 'mean'):
-					result = op.mean_operation(sk_sum, auths) #Compute mean on sum of sketches
-					
-				elif (stat_type == 'variance'):
-					result = op.variance_operation(sk_sum, auths) #Compute variance on sum of sketches	
-					
-				SockExt.send_msg(self.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
-				
-				print 'Stat computed. Listening for requests...'
-				
-				if conf.MEASUREMENT_MODE_PROCESSOR:
-					self.server.shutdown()
+				process_request(data, self)
 
 
 		except Exception as e:						
@@ -133,8 +103,42 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 		else:
 			self.handle_clean()		
+
+
+
+def process_request(data, obj):
+	#parameters
+	contents = data['contents']
+	stat_type = contents['type']
+	attributes = contents['attributes']
+	attr_file = attributes['file']
+	attr_sheet = attributes['sheet']
+	attr_column_1 = attributes['column_1']
+	attr_column_2 = attributes['column_2']
+	attr_column_3 = attributes['column_3']
+	
+
+	sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
+	sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
+	
+	
+	#Run selected operation
+	if (stat_type == 'median'):
+		result = op.median_operation(sk_sum, auths) #Compute median on sum of sketches
+
+	elif (stat_type == 'mean'):
+		result = op.mean_operation(sk_sum, auths) #Compute mean on sum of sketches
 		
-			
+	elif (stat_type == 'variance'):
+		result = op.variance_operation(sk_sum, auths) #Compute variance on sum of sketches	
+		
+	SockExt.send_msg(obj.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
+	
+	print 'Stat computed. Listening for requests...'
+	
+	if conf.MEASUREMENT_MODE_PROCESSOR:
+		obj.server.shutdown()
+
 
 def get_sketches_from_clients_non_blocking(client_ips, data):
 	try:			

@@ -74,6 +74,34 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			
 			#self.request.shutdown(socket.SHUT_RDWR)
 			#self.request.close()
+
+			elif data['request'] == 'partial_decrypt':
+				contents = json.loads(data['contents'])
+				
+				#from pprint import pprint
+				#print "--------"
+				#print(contents)
+				
+				try:
+					new_k = Bn.from_hex(contents['k'])
+				except:
+					new_k = None
+				
+				#reconstruct object
+				cipher_obj = Classes.Ct(
+				EcPt.from_binary(binascii.unhexlify(contents['pub']),G),
+				EcPt.from_binary(binascii.unhexlify(contents['a']),G),
+				EcPt.from_binary(binascii.unhexlify(contents['b']),G),
+				new_k, None)
+				
+
+				ct = cipher_obj.partial_dec(priv) #decrypt ct
+				
+				SockExt.send_msg(self.request, json.dumps({'return': hexlify(ct.export())}))
+			
+			#self.request.shutdown(socket.SHUT_RDWR)
+			#self.request.close()			
+			
 					
 		except Exception as e:		
 			print "Exception on incomming connection: ", e
