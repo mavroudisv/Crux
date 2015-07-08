@@ -59,17 +59,24 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_1 = attributes['column_1']
 				attr_column_2 = attributes['column_2']
 				attr_column_3 = attributes['column_3']
-				sk_w = attributes['sk_w']
-				sk_d = attributes['sk_d']
 			
 				print "A"
 				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
 				print "B"
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
 				print "C"
-				plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
+				if contents['type'] == 'median':
+					sk_w = attributes['sk_w']
+					sk_d = attributes['sk_d']
+					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
+					res = plain_sketch.to_JSON()
+					
+				elif contents['type'] == 'mean' or contents['type'] == 'variance':
+					evalues = encrypt_values(values, common_key)
+					res = cts_to_json(evalues)
+					
 				print "D"
-				SockExt.send_msg(self.request, json.dumps({'return': plain_sketch.to_JSON()})) #return serialized sketch
+				SockExt.send_msg(self.request, json.dumps({'return': res})) #return serialized sketch
 				print "Request served."
 				
 				if conf.MEASUREMENT_MODE_CLIENT:
@@ -132,10 +139,29 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 		else:
 			self.handle_clean()
-		
 	
 
 
+def cts_to_json(cts):
+	store_dict = {}
+	i=0
+	for c in cts:
+		store_dict[i] = json.loads(c.to_JSON())
+		i += 1
+                
+	result_dict = {'store':store_dict}
+	return result_dict
+
+	
+def encrypt_values(values, key):
+	enc_values = []
+	for v in values:
+		enc_values.append(Classes.Ct.enc(key, v))
+		
+	return enc_values
+
+	
+		
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
 	
@@ -164,9 +190,7 @@ def generate_group_key(auths=[]):
 	
 	#Add keys
 	c_pub = pub_keys[0]
-	print c_pub
 	for pkey in pub_keys[1:]:
-		print pkey
 		c_pub += pkey #pub is ecpt, so we add
 	return c_pub
 

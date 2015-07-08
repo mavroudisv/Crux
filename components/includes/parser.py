@@ -14,7 +14,7 @@ def get_rows(filename, sheet, num_clients, client_id):
 	lower_bound = rows_per_client*client_id + num_labels_rows + 1
 	upper_bound = rows_per_client*(client_id+1) + num_labels_rows
 	
-	#upper_bound = 100
+	upper_bound = 100
 	
 	#add residual in the first client
 	if ((num_clients -1)==client_id):

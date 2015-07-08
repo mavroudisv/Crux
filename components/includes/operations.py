@@ -32,9 +32,15 @@ def median_operation(sk_sum, auths):
 	#print "Estimated median: " + str(v)
 	return str(v)
 
+def mean_operation(elist, auths):
+	G = EcGroup(nid=conf.EC_GROUP)
+	esum = Classes.Ct.sum(elist)
+	plain_sum = collective_decryption(esum, auths)
+	
+	mean = float(plain_sum)/float(len(elist))
+	return str(mean)
 
-
-def mean_operation(sk_sum, auths):
+def mean_operation_streaming(sk_sum, auths):
     try:
         lower_bound = 0
         upper_bound = 120
@@ -63,7 +69,7 @@ def mean_operation(sk_sum, auths):
 
 
 
-def variance_operation(sk_sum, auths):    
+def variance_operation_streaming(sk_sum, auths):    
     try:
         lower_bound = 0
         upper_bound = 120
@@ -115,30 +121,26 @@ def collective_decryption(ct, auths=[]):
 
 		#Encrypt with ephimeral key
 		enc_ct = Classes.Ct.enc(tmp_pub, ct)
-
-		print "ct.m: " + str(enc_ct.m)
+		
 		for auth in auths: #Send for decryption to each authority
-			print "D"
 			json_obj_str = enc_ct.to_JSON()
 			data = {'request':'partial_decrypt', 'contents': json_obj_str}
 			#print data
 			
-			print "E"
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((auth, conf.AUTH_PORT)) #connect to authority
 			SockExt.send_msg(s, json.dumps(data))
-			print "F"
+
 			result = json.loads(SockExt.recv_msg(s))
 			enc_ct.b = EcPt.from_binary(binascii.unhexlify(result['return']),G)
-			print "G"
+
 			s.shutdown(socket.SHUT_RDWR)
 			s.close()
 			
 			
 		#Decrypt using the ephimeral private key
-		print "H"
 		value = enc_ct.dec(tmp_priv) #decrypt ct
-		print "Z"
+
 		return value
 			
 	except Exception as e:
