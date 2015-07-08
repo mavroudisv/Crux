@@ -40,6 +40,15 @@ def mean_operation(elist, auths):
 	mean = float(plain_sum)/float(len(elist))
 	return str(mean)
 
+def variance_operation(elist, auths):
+	G = EcGroup(nid=conf.EC_GROUP)
+	esum = Classes.Ct.sum(elist)
+	plain_sum = collective_decryption(esum, auths)
+	
+	mean = float(plain_sum)/float(len(elist))
+	return str(mean)
+
+
 def mean_operation_streaming(sk_sum, auths):
     try:
         lower_bound = 0

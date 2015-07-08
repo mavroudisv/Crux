@@ -130,10 +130,13 @@ def process_request(data, obj):
 		print "B"
 		obj_sum = G.sum(values)
 		print "C"
-		result = op.mean_operation(obj_sum, auths) #Compute mean on sum of sketches
+		result = op.mean_operation(obj_sum, auths) #Compute mean from cts
 		
 	elif (stat_type == 'variance'):
-		result = op.variance_operation(sk_sum, auths) #Compute variance on sum of sketches	
+		print "A"
+		values = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
+		result = op.variance_operation(values, auths) #Compute mean from cts
+		
 		
 	SockExt.send_msg(obj.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 	
