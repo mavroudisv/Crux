@@ -120,15 +120,16 @@ def process_request(data, obj):
 	
 	#Run selected operation
 	if (stat_type == 'median'):
+		data['contents']['data_type'] = "sketch"
 		sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
 		sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 		result = op.median_operation(sk_sum, auths) #Compute median on sum of sketches
 
 	elif (stat_type == 'mean'):
-		print "A"
-		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
+		data['contents']['data_type'] = "values"
+		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather values from clients
 		
-		elist = []
+		elist = [] #List the cts
 		for vset in value_sets:
 			for value in vset:
 				elist.append(value)
@@ -136,9 +137,15 @@ def process_request(data, obj):
 		result = op.mean_operation(elist, auths) #Compute mean from cts
 		
 	elif (stat_type == 'variance'):
-		values = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
-		result = op.variance_operation(values, auths) #Compute mean from cts
-		
+		data['contents']['data_type'] = "values"
+		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather values from clients
+		values_lst = concat_sets(value_sets)
+
+		data['contents']['data_type'] = "values_sq"
+		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather squared values from clients
+		values_sq_lst = concat_sets(value_sets)
+
+		result = op.variance_operation(values_lst, values_sq_lst, auths) #Compute variance from cts		
 		
 	SockExt.send_msg(obj.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 	
@@ -147,6 +154,13 @@ def process_request(data, obj):
 	if conf.MEASUREMENT_MODE_PROCESSOR:
 		obj.server.shutdown()
 
+
+def concat_sets(value_sets):
+	elist = [] #List the cts
+	for vset in value_sets:
+		for value in vset:
+			elist.append(value)
+	return elist
 
 def get_values_from_clients_non_blocking(client_ips, data):
 	try:			
@@ -203,9 +217,6 @@ def get_values_from_clients_non_blocking(client_ips, data):
 				print "F"
 				value_sets.append(values)
 				
-		
-		
-
 		return value_sets
 
 	except Exception as e:

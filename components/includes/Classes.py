@@ -150,7 +150,6 @@ class Ct:
 
 
 
-
     @staticmethod
     def sum(elist):
         """ Sums a number of Cts """
@@ -177,15 +176,19 @@ class Ct:
         return Ct(pub, new_a, new_b, new_k, new_m)
 
     def __rmul__(self, other):
-        """ Multiples an integer with a Ciphertext """
-        o = self.pub.group.order()
-        new_a = other * self.a 
-        new_b = other * self.b
-        new_k, new_m = None, None
-        if self.k is not None:
-            new_k = self.k.mod_mul( other, o)
-            new_m = self.m.mod_mul( other, o) 
-        return Ct(self.pub, new_a, new_b, new_k, new_m)
+        if isinstance(other, int):
+            """ Multiples an integer with a Ciphertext """
+            o = self.pub.group.order()
+            new_a = other * self.a 
+            new_b = other * self.b
+            new_k, new_m = None, None
+            if self.k is not None:
+                new_k = self.k.mod_mul( other, o)
+                new_m = self.m.mod_mul( other, o) 
+            return Ct(self.pub, new_a, new_b, new_k, new_m)
+			
+			            
+            
 
     def __neg__(self):
         """ Multiply the value by -1 """

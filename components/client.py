@@ -65,14 +65,19 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				print "B"
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
 				print "C"
-				if contents['type'] == 'median':
+				if contents['data_type'] == 'sketch':
 					sk_w = attributes['sk_w']
 					sk_d = attributes['sk_d']
 					plain_sketch = generate_sketch(int(sk_w), int(sk_d), values) #construct sketch from values
 					res = plain_sketch.to_JSON()
 					
-				elif contents['type'] == 'mean' or contents['type'] == 'variance':
+				elif contents['data_type'] == 'values':
 					evalues = encrypt_values(values, common_key)
+					res = cts_to_json(evalues)
+				
+				elif contents['data_type'] == 'values_sq':
+					sq_values = square_values(values)
+					evalues = encrypt_values(sq_values, common_key)
 					res = cts_to_json(evalues)
 					
 				print "D"
@@ -133,13 +138,18 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				with PyCallGraph(output=graphviz, config=config):
 					self.handle_clean()
 
-
 			else:
 				self.handle_clean()
 
 		else:
 			self.handle_clean()
 	
+
+def square_values(vlist):
+	squared = []
+	for el in vlist:
+		squared.append(el*el)		
+	return squared
 
 
 def cts_to_json(cts):
@@ -148,7 +158,6 @@ def cts_to_json(cts):
 	for c in cts:
 		store_dict[i] = json.loads(c.to_JSON())
 		i += 1
-                
 	result_dict = {'store':store_dict}
 	return result_dict
 
@@ -157,18 +166,14 @@ def encrypt_values(values, key):
 	enc_values = []
 	for v in values:
 		enc_values.append(Classes.Ct.enc(key, v))
-		
 	return enc_values
-
 	
 		
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
-	
 	sk = Classes.CountSketchCt(w, d, common_key)
 	for v in values:
-		sk.insert(int(v))	
-	
+		sk.insert(int(v))
 	return sk
 
 

@@ -43,13 +43,24 @@ def mean_operation(elist, auths):
 	return str(mean)
 
 
-def variance_operation(elist, auths):
+def variance_operation(elist, elist_sq, auths):
 	G = EcGroup(nid=conf.EC_GROUP)
+
+	#E(x^2) = (S(ri^2)/N)
+	plain_sum_sqs = list_sum_decryption(elist_sq, auths)
+	#print "plain_sum_sqs: " + str(plain_sum_sqs)
+	first = plain_sum_sqs/len(elist)
+	
+	#E(x)^2 = (S(ri)/N)^2
 	esum = Classes.Ct.sum(elist)
 	plain_sum = collective_decryption(esum, auths)
-	
-	mean = float(plain_sum)/float(len(elist))
-	return str(mean)
+	tmp = float(plain_sum) / float(len(elist))
+	second = tmp * tmp
+	#print "second: " + str(second)
+
+	variance = first - second
+	return str(variance)
+
 
 
 def mean_operation_streaming(sk_sum, auths):
@@ -78,7 +89,6 @@ def mean_operation_streaming(sk_sum, auths):
         print "Exception while computing mean: ", e
        
     return  str(float(plain_sum_mul)/float(plain_sum-1))
-
 
 
 def variance_operation_streaming(sk_sum, auths):    
@@ -122,9 +132,37 @@ def variance_operation_streaming(sk_sum, auths):
        
     return  str(variance)
 
-
-def collective_decryption(ct, auths=[]):
+#Break the list in smaller parts until the decryption is successful
+def list_sum_decryption(elist, auths=[]):
+	result = 0
+	attempt = 0
+	while result == 0:
+		try:
+			result = 0
+			attempt += 1
+			length = len(elist)
+			part_size = len(elist)//attempt
+			#print "Attempt: " + str(attempt)
+			for i in range(length//part_size):
+						
+				_from = i * part_size
+				if i < (length//part_size -1):
+					_to = (i+1) * part_size
+				else:
+					_to = length
+				
+				esum_sqs = Classes.Ct.sum(elist[_from:_to])
+				plain_part_sum = collective_decryption(esum_sqs, auths)
+				result += plain_part_sum
+			
+		except Exception as e:
+			#print " " + str(e)
+			result = 0
+			pass
 	
+	return result
+	
+def collective_decryption(ct, auths=[]):	
 	try:
 		#Generate ephimeral key
 		G = EcGroup(nid=conf.EC_GROUP)
@@ -156,5 +194,5 @@ def collective_decryption(ct, auths=[]):
 		return value
 			
 	except Exception as e:
-		print "Exception during collective decryption: ", e
+		#print "Exception during collective decryption: ", e
 		return None
