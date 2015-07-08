@@ -126,14 +126,16 @@ def process_request(data, obj):
 
 	elif (stat_type == 'mean'):
 		print "A"
-		values = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
-		print "B"
-		obj_sum = G.sum(values)
-		print "C"
-		result = op.mean_operation(obj_sum, auths) #Compute mean from cts
+		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
+		
+		elist = []
+		for vset in value_sets:
+			for value in vset:
+				elist.append(value)
+		
+		result = op.mean_operation(elist, auths) #Compute mean from cts
 		
 	elif (stat_type == 'variance'):
-		print "A"
 		values = get_values_from_clients_non_blocking(clients, data) #Gather sketches from clients
 		result = op.variance_operation(values, auths) #Compute mean from cts
 		
@@ -193,7 +195,7 @@ def get_values_from_clients_non_blocking(client_ips, data):
 				print "D2"
 				obj_json = json.loads(data)
 				print "D3"
-				print obj_json['return']
+				#print obj_json['return']
 				contents = obj_json['return']
 				print "D4"
 				print "E"
