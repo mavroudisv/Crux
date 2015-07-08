@@ -121,13 +121,13 @@ def process_request(data, obj):
 	#Run selected operation
 	if (stat_type == 'median'):
 		data['contents']['data_type'] = "sketch"
-		sketches = get_sketches_from_clients_non_blocking(clients, data) #Gather sketches from clients
+		sketches = get_data_from_clients_non_blocking(clients, data) #Gather sketches from clients
 		sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
 		result = op.median_operation(sk_sum, auths) #Compute median on sum of sketches
 
 	elif (stat_type == 'mean'):
 		data['contents']['data_type'] = "values"
-		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather values from clients
+		value_sets = get_data_from_clients_non_blocking(clients, data) #Gather values from clients
 		
 		elist = [] #List the cts
 		for vset in value_sets:
@@ -138,11 +138,11 @@ def process_request(data, obj):
 		
 	elif (stat_type == 'variance'):
 		data['contents']['data_type'] = "values"
-		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather values from clients
+		value_sets = get_data_from_clients_non_blocking(clients, data) #Gather values from clients
 		values_lst = concat_sets(value_sets)
 
 		data['contents']['data_type'] = "values_sq"
-		value_sets = get_values_from_clients_non_blocking(clients, data) #Gather squared values from clients
+		value_sets = get_data_from_clients_non_blocking(clients, data) #Gather squared values from clients
 		values_sq_lst = concat_sets(value_sets)
 
 		result = op.variance_operation(values_lst, values_sq_lst, auths) #Compute variance from cts		
@@ -162,68 +162,6 @@ def concat_sets(value_sets):
 			elist.append(value)
 	return elist
 
-def get_values_from_clients_non_blocking(client_ips, data):
-	try:			
-		import select
-		import socket
-		import sys
-		import Queue
-
-		inputs = []
-		outputs = []
-
-		#Prepare sockets
-		value_sets = []
-		for cl_ip in client_ips:
-			#Fetch data from client as a serialized sketch object
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
-			#print >>sys.stderr, 'starting up on %s port %s' % (cl_ip, conf.CLIENT_PORT)
-			s.connect((cl_ip, conf.CLIENT_PORT))
-			#s.listen(5) # Listen for incoming connections
-			outputs.append(s)
-
-		print "D"
-		# Outgoing message queues (socket:Queue)
-		#message_queues = {}
-
-		while inputs or outputs:
-
-			# Wait for at least one of the sockets to be ready for processing
-			#print >>sys.stderr, '\nwaiting for the next event'
-			readable, writable, exceptional = select.select(inputs, outputs, inputs)
-
-			#Handle outputs
-			for s in writable:
-				SockExt.send_msg(s, json.dumps(data))
-				inputs.append(s)
-				outputs.remove(s)
-
-			# Handle inputs
-			for s in readable:
-				data = SockExt.recv_msg(s)
-				#print data
-				inputs.remove(s)
-				s.shutdown(socket.SHUT_RDWR)
-				s.close()
-
-				print "D2"
-				obj_json = json.loads(data)
-				print "D3"
-				#print obj_json['return']
-				contents = obj_json['return']
-				print "D4"
-				print "E"
-				values = load_value_set(contents['store'])
-				print "F"
-				value_sets.append(values)
-				
-		return value_sets
-
-	except Exception as e:
-		print "Exception while getting value from client: " + str(e)
-		traceback.print_exc()
-
-
 
 
 def load_value_set(cont_dict):	
@@ -233,20 +171,24 @@ def load_value_set(cont_dict):
 	for i in range(len(cont_dict)):              
 		contents = cont_dict[str(i)]                        
 		ct_values.append(Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m'])))
-		
 	
 	return ct_values
 
 
 
-def get_sketches_from_clients_non_blocking(client_ips, data):
-	try:			
-		#Compute sketch parameters
-		tmp_w = int(math.ceil(math.e / conf.EPSILON))
-		tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+def get_data_from_clients_non_blocking(client_ips, data):
+	try:
+		
+		_type = data['contents']['data_type']
+		
+		if _type == "sketch":
+			#Compute sketch parameters
+			tmp_w = int(math.ceil(math.e / conf.EPSILON))
+			tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
 
-		data['contents']['attributes']['sk_w'] = tmp_w
-		data['contents']['attributes']['sk_d'] = tmp_d
+			data['contents']['attributes']['sk_w'] = tmp_w
+			data['contents']['attributes']['sk_d'] = tmp_d
+
 
 		import select
 		import socket
@@ -257,7 +199,7 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 		outputs = []
 
 		#Prepare sockets
-		sketches = []
+		elist = [] #list to store objects to return
 		for cl_ip in client_ips:
 			#Fetch data from client as a serialized sketch object
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
@@ -285,28 +227,38 @@ def get_sketches_from_clients_non_blocking(client_ips, data):
 
 			# Handle inputs
 			for s in readable:
-				data = SockExt.recv_msg(s)
+				inp_data = SockExt.recv_msg(s)
 				#print data
 				inputs.remove(s)
 				s.shutdown(socket.SHUT_RDWR)
 				s.close()
 
-				obj_json = json.loads(data)
-				contents = json.loads(obj_json['return'])
-				#tmp_w = int(data['vars']['w'])
-				#tmp_d = int(data['vars']['d'])
+				obj_json = json.loads(inp_data)
 				
-				#De-serialize sketch object
-				sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
-				sketch.load_store_list(tmp_w, tmp_d, contents['store'])
-				sketches.append(sketch)
-				
-		############# NON-BLOCKING PART #############
+				if _type == "sketch":
+					contents = json.loads(obj_json['return'])
 
-		return sketches
+					#tmp_w = int(data['vars']['w'])
+					#tmp_d = int(data['vars']['d'])
+					
+					#De-serialize sketch object
+					sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
+					sketch.load_store_list(tmp_w, tmp_d, contents['store'])
+					elist.append(sketch)
+					
+				elif _type == "values" or _type == "values_sq":
+					contents = obj_json['return']
+					print "AAAAAAAAA"
+					values = load_value_set(contents['store'])
+					print "BBBBBBBBBBB"
+					elist.append(values)	
+					
+			
+
+		return elist
 
 	except Exception as e:
-		print "Exception while getting sketch from client: " + str(e)
+		print "Exception while getting data from client: " + str(e)
 		traceback.print_exc()
 
 
