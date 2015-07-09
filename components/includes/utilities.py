@@ -52,3 +52,10 @@ def alive(port, machines=[]):
 
 	return success
 
+def clean_folder(path):
+	import glob
+	import os
+
+	files = glob.glob(path+'/*')
+	for f in files:
+		os.remove(f)

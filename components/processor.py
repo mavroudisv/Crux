@@ -57,6 +57,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 	def handle(self):
 		if conf.MEASUREMENT_MODE_PROCESSOR:
 			
+			utilities.clean_folder(conf.PROF_FOLDER)
+			
 			if conf.PROFILER == 'cProfiler':
 				import cProfile
 				import pstats
