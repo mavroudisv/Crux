@@ -310,13 +310,12 @@ def load():
 	clients_str = sys.argv[2]
 	auths = auths_str.split('-')
 	clients = clients_str.split('-')
+    skip_ping = sys.argv[3]
     
-    
-    #profiler = sys.argv[3]
 	from pycallgraph import PyCallGraph
 	from pycallgraph.output import GraphvizOutput
 	
-	if utilities.alive(conf.AUTH_PORT, auths):
+	if utilities.alive(conf.AUTH_PORT, auths) or skip_ping:
 		print "Authorities responsive. Listening..."
 		listen_on_port(conf.PROCESSOR_PORT)
 	else:
