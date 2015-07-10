@@ -214,19 +214,23 @@ def load():
 	print "Client id: " + str(unique_id)
 	num_clients = int(sys.argv[4])
 
+    try:
+		skip_ping = sys.argv[5]
+    except Exception as e:
+		skip_ping = False
 	
 	auths = auths_str.split('-')
 	processors = processors_str.split('-')
 	
 	#Make sure all components are up
 	all_responsive = True
-	if utilities.alive(conf.AUTH_PORT, auths):
+	if utilities.alive(conf.AUTH_PORT, auths) or skip_ping:
 		print "All authorities are responsive"
 	else:
 		all_responsive = False
 		print "Not all authorities are responsive"
 
-	if utilities.alive(conf.PROCESSOR_PORT, processors):
+	if utilities.alive(conf.PROCESSOR_PORT, processors) or skip_ping:
 		print "Processor is responsive."
 	else:
 		all_responsive = False

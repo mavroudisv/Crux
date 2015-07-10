@@ -310,7 +310,11 @@ def load():
 	clients_str = sys.argv[2]
 	auths = auths_str.split('-')
 	clients = clients_str.split('-')
-    skip_ping = sys.argv[3]
+    
+    try:
+		skip_ping = sys.argv[3]
+    except Exception as e:
+		skip_ping = False
     
 	from pycallgraph import PyCallGraph
 	from pycallgraph.output import GraphvizOutput
