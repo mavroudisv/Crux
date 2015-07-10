@@ -14,7 +14,7 @@ it can be further extended for the computation of other statistics.
 
 
 ##Components
-----------
+
 
 ### Query processor
 
