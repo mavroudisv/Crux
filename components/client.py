@@ -214,9 +214,9 @@ def load():
 	print "Client id: " + str(unique_id)
 	num_clients = int(sys.argv[4])
 
-    try:
+	try:
 		skip_ping = sys.argv[5]
-    except Exception as e:
+	except Exception as e:
 		skip_ping = False
 	
 	auths = auths_str.split('-')
