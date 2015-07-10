@@ -6,9 +6,9 @@ TES is a complete system enabling end-users to submit queries for statistics on 
 ##Overview
 
 The system currently supports:
-*[ Median
-*[ Mean
-*[ Variance
+* Median
+* Mean
+* Variance
 
 it can be further extended for the computation of other statistics.
 
@@ -29,5 +29,5 @@ it can be further extended for the computation of other statistics.
 
 Further Improvements
 ----------
-*[ Add new authorities on the fly
-*[ Django user interface
+* Add new authorities on the fly
+* Django user interface
