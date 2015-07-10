@@ -2,6 +2,8 @@ automation
 main.py
 *.pyc
 *.fuse*
+*.prof
+*.png
 *.db
 tools
 
