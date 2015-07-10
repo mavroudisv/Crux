@@ -96,6 +96,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 	
 	def handle(self):
 		if conf.MEASUREMENT_MODE_CLIENT:
+		
+			utilities.clean_folder(conf.PROF_FOLDER)
 	
 			if conf.PROFILER == 'cProfiler':
 				import cProfile
