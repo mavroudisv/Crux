@@ -10,6 +10,7 @@ import csv
 import time
 import xlrd
 from itertools import product
+import datetime
 
 from includes import config as conf
 from includes import utilities
@@ -82,7 +83,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					
 				print "D"
 				SockExt.send_msg(self.request, json.dumps({'return': res})) #return serialized sketch
-				print "Request served."
+				print "[" + str(datetime.datetime.now()) + "] Request served."
 				
 				if conf.MEASUREMENT_MODE_CLIENT:
 					self.server.shutdown()
