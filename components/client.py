@@ -47,7 +47,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		try:
 			inp = SockExt.recv_msg(self.request).strip()				
 			data = json.loads(inp)
-			print "[" + str(datetime.datetime.now())[:-6] + "] Request for: " + str(data['request'])
+			print "[" + str(datetime.datetime.now())[:-7] + "] Request for: " + str(data['request'])
 
 			if data['request'] == 'stat':
 				#print data['contents']
@@ -82,7 +82,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					res = cts_to_json(evalues)
 					
 				SockExt.send_msg(self.request, json.dumps({'return': res})) #return serialized sketch
-				print "[" + str(datetime.datetime.now())[:-6] + "] Request served."
+				print "[" + str(datetime.datetime.now())[:-7] + "] Request served."
 				
 				if conf.MEASUREMENT_MODE_CLIENT:
 					self.server.shutdown()
