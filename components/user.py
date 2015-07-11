@@ -106,7 +106,7 @@ if __name__ == "__main__":
 		value = 12345
 		tmp_obj = remote_encrypt(ip, port, value)
 		new_value = remote_decrypt(ip, port, tmp_obj)
-		print new_value
+		#print new_value
 		if value==new_value:
 			print "Test Successful!"
 		else:
@@ -125,11 +125,12 @@ if __name__ == "__main__":
 			data = json.loads(SockExt.recv_msg(s))
 			print "Response:"
 			result = data['return']
-			
-			approx_res = result['value']
-			cor_res = comp_mean('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
-			toc = time.clock()
-			dt = (toc - tic)
+
+			if result['success']=='True':			
+				approx_res = result['value']
+				cor_res = comp_mean('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
+				toc = time.clock()
+				dt = (toc - tic)
 
 		elif args.stat[0] == 'median':
 			tic = time.clock()
@@ -142,11 +143,12 @@ if __name__ == "__main__":
 			data = json.loads(SockExt.recv_msg(s))
 			print "Response:"
 			result = data['return']
-			
-			approx_res = result['value']
-			cor_res = comp_median('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
-			toc = time.clock()
-			dt = (toc - tic)
+
+			if result['success']=='True':
+				approx_res = result['value']
+				cor_res = comp_median('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
+				toc = time.clock()
+				dt = (toc - tic)
 
 
 		elif args.stat[0] == 'variance':
@@ -159,11 +161,11 @@ if __name__ == "__main__":
 			data = json.loads(SockExt.recv_msg(s))
 			print "Response:"
 			result = data['return']
-			
-			approx_res = result['value']
-			cor_res = comp_variance('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
-			toc = time.clock()
-			dt = (toc - tic)
+			if result['success']=='True':
+				approx_res = result['value']
+				cor_res = comp_variance('data/data_large.xls', 'iadatasheet2', args.stat[1], args.stat[2], args.stat[3])
+				toc = time.clock()
+				dt = (toc - tic)
 
 
 		#Print stats results

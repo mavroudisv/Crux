@@ -15,7 +15,7 @@ def send_msg(sock, msg):
         msg = zlib.compress(msg)
         #msg = base64.b64encode(msg)
         
-    print "len: " + str(len(msg))
+    #print "len: " + str(len(msg))
     msg = struct.pack('>I', len(msg)) + msg
     sock.sendall(msg)
 

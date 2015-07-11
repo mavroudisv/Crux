@@ -47,7 +47,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		try:
 			inp = SockExt.recv_msg(self.request).strip()				
 			data = json.loads(inp)
-			print "Request for: " + str(data['request'])
+			print "[" + str(datetime.datetime.now())[:-6] + "] Request for: " + str(data['request'])
 
 			if data['request'] == 'stat':
 				#print data['contents']
@@ -61,11 +61,11 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_2 = attributes['column_2']
 				attr_column_3 = attributes['column_3']
 			
-				print "A"
+				
+				
 				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
-				print "B"
 				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
-				print "C"
+
 				if contents['data_type'] == 'sketch':
 					sk_w = attributes['sk_w']
 					sk_d = attributes['sk_d']
@@ -81,9 +81,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					evalues = encrypt_values(sq_values, common_key)
 					res = cts_to_json(evalues)
 					
-				print "D"
 				SockExt.send_msg(self.request, json.dumps({'return': res})) #return serialized sketch
-				print "[" + str(datetime.datetime.now()) + "] Request served."
+				print "[" + str(datetime.datetime.now())[:-6] + "] Request served."
 				
 				if conf.MEASUREMENT_MODE_CLIENT:
 					self.server.shutdown()
