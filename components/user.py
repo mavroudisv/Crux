@@ -78,11 +78,11 @@ if __name__ == "__main__":
 	
 	#print comp_median('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
 	#print comp_variance('data/data_large.xls', 'iadatasheet2', 'Lone Parents', 'Lone parents not in employment', '2011')
-
 	
 	ip = args.server
 	port = args.port
 	
+	print ip
 
 	if args.ping:
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

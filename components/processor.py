@@ -246,13 +246,12 @@ def get_data_from_clients_non_blocking(client_ips, data):
 					#De-serialize sketch object
 					sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
 					sketch.load_store_list(tmp_w, tmp_d, contents['store'])
+					#sketch.print_details()
 					elist.append(sketch)
 					
 				elif _type == "values" or _type == "values_sq":
 					contents = obj_json['return']
-					print "AAAAAAAAA"
 					values = load_value_set(contents['store'])
-					print "BBBBBBBBBBB"
 					elist.append(values)	
 					
 			

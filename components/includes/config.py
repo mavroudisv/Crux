@@ -18,12 +18,11 @@ TRIES = 5
 FN_I_TABLE = 'data/i_table.db'
 FN_N_TABLE = 'data/n_table.db'
 
+#Debug
+SHOW_LEN = True
 
 #Optimizations
 COMPRESS = False
-
-
-FAST_PARSING = False
 
 #Measurements
 MEASUREMENT_MODE_AUTHORITY = False

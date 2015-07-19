@@ -43,9 +43,9 @@ class Ct:
         """ Produce a ciphertext, from a public key and message """
         if isinstance(m, int):
             m = Bn(m)
-
             o = pub.group.order()
             k = o.random()
+            #print "k: " + str(k)
             g = pub.group.generator()
             a = k * g
             b = k * pub + EcPt.from_binary(binascii.unhexlify(_n_table[str((o + m) % o)]), G) # m * g
@@ -238,8 +238,12 @@ class CountSketchCt(object):
 
         self.pub = pub
         self.d, self.w = d, w
-        self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
+        
+        #No dont do this...
+        #self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
 
+        #Do this instead...
+        self.store = [ [Ct.enc(pub, 0) for i in range(w)] for j in range(d) ]
 
     def to_JSON(self):
         #'d': 7,
@@ -271,20 +275,17 @@ class CountSketchCt(object):
                 try:                    
                     self.store[i][j] = Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m']))
                     counter += 1
-                   
                 except Exception as e:
                     print "Exception while loading sketch store matrix: " + str(e)
                     traceback.print_exc()
-                    
-                                  
+                 
                 
     
     def print_details(self):
-    
          for i in range(self.d):
              for j in range(self.w):
-				 print self.store[i][j].k           
-				 print "---------"
+				 print self.store[i][j].a           
+             print "---------"
 
     def dump(self):
         from cStringIO import StringIO
@@ -423,14 +424,14 @@ def CountSketchCt_unit_test():
         G = EcGroup()
         x = G.order().random()
         y = x * G.generator()
-		
         cs = CountSketchCt(50, 7, y)
         cs.insert(11)
         c, d = cs.estimate(11)
+        
         est = c.dec(x)
         #assert est == d
         return est == d
-    except Exception:
+    except Exception as e:
         return False
         
         
