@@ -22,7 +22,7 @@ from includes import operations as op
 G = EcGroup(nid=conf.EC_GROUP)
 auths = []
 clients = []
-supported_stats = ['median']
+supported_stats = ['median', 'mean', 'variance']
 	
 	
 
@@ -183,13 +183,13 @@ def get_data_from_clients_non_blocking(client_ips, data):
 		
 		_type = data['contents']['data_type']
 		
-		if _type == "sketch":
+		#if _type == "sketch":
 			#Compute sketch parameters
-			tmp_w = int(math.ceil(math.e / conf.EPSILON))
-			tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+			#tmp_w = int(math.ceil(math.e / conf.EPSILON))
+			#tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
 
-			data['contents']['attributes']['sk_w'] = tmp_w
-			data['contents']['attributes']['sk_d'] = tmp_d
+			#data['contents']['attributes']['sk_w'] = tmp_w
+			#data['contents']['attributes']['sk_d'] = tmp_d
 
 
 		import select
@@ -240,8 +240,10 @@ def get_data_from_clients_non_blocking(client_ips, data):
 				if _type == "sketch":
 					contents = json.loads(obj_json['return'])
 
-					#tmp_w = int(data['vars']['w'])
-					#tmp_d = int(data['vars']['d'])
+			
+					tmp_w = int(data['contents']['attributes']['sk_w'])
+					tmp_d = int(data['contents']['attributes']['sk_d'])
+					print tmp_d
 					
 					#De-serialize sketch object
 					sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))

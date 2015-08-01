@@ -25,6 +25,7 @@ common_key = None
 data_dict = None
 unique_id = None
 num_clients = None
+parsed = {}
 
 
 def listen_on_port(port):
@@ -43,6 +44,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 		global pub
 		global auths
 		global common_key
+		global parsed
 		
 		try:
 			inp = SockExt.recv_msg(self.request).strip()				
@@ -61,10 +63,13 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				attr_column_2 = attributes['column_2']
 				attr_column_3 = attributes['column_3']
 			
-				
-				
-				rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
-				values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
+				if not str(attr_column_3) in parsed:
+					rows = p.get_rows(attr_file,attr_sheet, num_clients, unique_id) #determine which rows correspond to client
+					values = p.read_xls_cell(attr_file, attr_sheet, attr_column_1, attr_column_2, attr_column_3, rows) #load values from xls
+					parsed[str(attr_column_3)] = values
+				else:
+					values = parsed[str(attr_column_3)]
+
 
 				if contents['data_type'] == 'sketch':
 					sk_w = attributes['sk_w']
@@ -80,7 +85,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 					sq_values = square_values(values)
 					evalues = encrypt_values(sq_values, common_key)
 					res = cts_to_json(evalues)
-					
+				
 				SockExt.send_msg(self.request, json.dumps({'return': res})) #return serialized sketch
 				print "[" + str(datetime.datetime.now())[:-7] + "] Request served."
 				
@@ -174,8 +179,9 @@ def encrypt_values(values, key):
 #Add values to sketch
 def generate_sketch(w, d, values=[]):
 	sk = Classes.CountSketchCt(w, d, common_key)
-	for v in values:
+	for i,v in enumerate(values):
 		sk.insert(int(v))
+		#print(str(i) + "|"),
 	return sk
 
 

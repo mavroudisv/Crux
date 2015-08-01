@@ -210,12 +210,14 @@ class Ct:
         return self + E0
 
 
-def hashes(item, d):
+def hashes(item, d, packed):
     """ Returns d hashes / positions for the item """
     codes = []
+    
+    encoded = item.encode("utf8")
     i = 0
     while len(codes) < d:
-        codes += list(array('I', sha512(pack("I", i) + item.encode("utf8")).digest())) 
+        codes += list(array('I', sha512(packed[i] + encoded).digest()))
         i += 1
     return codes[:d]
 
@@ -223,6 +225,8 @@ def hashes(item, d):
 class CountSketchCt(object):
     """ A Count Sketch of Encrypted values """
 
+
+    
     @staticmethod
     def epsilondelta(epsilon, delta, pub):
         w = int(math.ceil(math.e / epsilon))
@@ -238,6 +242,10 @@ class CountSketchCt(object):
 
         self.pub = pub
         self.d, self.w = d, w
+        
+        self.packed = []
+        for i in range(d):
+			self.packed.append(pack("I", i))
         
         #No dont do this...
         #self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
@@ -312,7 +320,7 @@ class CountSketchCt(object):
         """ Insert an element into the encrypted count sketch """
         try:
             item = str(item)
-            h = hashes(item, self.d)
+            h = hashes(item, self.d, self.packed)
             for di in range(self.d):
                 self.store[di][h[di] % self.w] += 1 
  
@@ -325,7 +333,7 @@ class CountSketchCt(object):
         """ Estimate the frequency of one value """
 
         item = str(item)
-        h = hashes(item, self.d)
+        h = hashes(item, self.d, self.packed)
         h2 = []
         for hi in h:
             v = hi - 1 if hi % 2 == 0 else hi + 1

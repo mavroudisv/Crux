@@ -59,3 +59,25 @@ def clean_folder(path):
 	files = glob.glob(path+'/*')
 	for f in files:
 		os.remove(f)
+
+
+def dict_to_csv(filename, dictionary):
+	
+	target = open(filename, 'w')
+	
+	
+	target.write(" , ")
+	for i in dictionary.keys():
+		for j in dictionary[i].keys():
+			target.write( j + ", ")
+		break
+	
+	
+	target.write("\n")
+	for i in dictionary.keys():
+		target.write(i + ", "),
+		for j in dictionary[i].keys():
+			target.write(dictionary[i][j] + ", ")
+		target.write("\n")
+	
+	target.close()

@@ -5,6 +5,7 @@ from petlib.ec import *
 import binascii
 import sys
 import numpy
+import math
 
 from includes import config as conf
 from includes import utilities
@@ -72,7 +73,11 @@ if __name__ == "__main__":
 	group.add_argument('--pub', action='store_true', help='Request the public key from authority')
 	group.add_argument('--stat', help='Run size tests', nargs='+') #choices=['mean', 'median', 'variance']
 	group.add_argument('--test', action='store_true', help='Verifies that the remote encryption and decryption work properly')
-	
+
+	#Experiments
+	group.add_argument('--sketch_size', action='store_true', help='Sketch size vs quality vs time')
+	group.add_argument('--DP', action='store_true', help='DP vs quality')
+
 	args = parser.parse_args()
 	
 	
@@ -138,6 +143,16 @@ if __name__ == "__main__":
 			s.connect((ip, int(port)))
 			#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
 			data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+			
+			#Compute sketch parameters
+			tmp_w = int(math.ceil(math.e / conf.EPSILON))
+			tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
+
+			data['contents']['attributes']['sk_w'] = tmp_w
+			data['contents']['attributes']['sk_d'] = tmp_d
+	
+		
+		
 			SockExt.send_msg(s, json.dumps(data))
 			print "Request Sent"
 			data = json.loads(SockExt.recv_msg(s))
@@ -180,7 +195,60 @@ if __name__ == "__main__":
 
 
 
+	elif args.sketch_size:
+		
+		wd_time = {}
+		wd_error = {}
+		
+		cor_res = comp_median('data/data_large.xls', 'iadatasheet2', 'Adults in Employment', 'No adults in employment in household: With dependent children', '2011')
+		
+		#[0.5, 0.35, 0.25, 0.15, 0.1, 0.05, 0.025, 0.01]:  #, 0.005, 0.001]:
+		
+		for param_d in range(1,3):
+			wd_time[str(param_d)] = {}
+			wd_error[str(param_d)] = {}
+			
+			for param_w in range(3,5):
+				tic = time.time()
+				#print 'tic: ' + str(tic)
+				
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.connect((ip, int(port)))
+				data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+				#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+				
+				#Compute sketch parameters
+				#tmp_w = int(math.ceil(math.e / param_w))
+				#tmp_d = int(math.ceil(math.log(1.0 / param_d)))
 
+				print "Sketch bins: tmp_w " + str(param_w) + " tmp_d " + str(param_d)
+				data['contents']['attributes']['sk_w'] = param_w
+				data['contents']['attributes']['sk_d'] = param_d
 
+			
+			
+				SockExt.send_msg(s, json.dumps(data))
+				#print "Request Sent"
+				data = json.loads(SockExt.recv_msg(s))
+				#print "Response:"
+				result = data['return']
+
+				if result['success']=='True':
+					approx_res = result['value']
+					#cor_res = comp_median('data/data_large.xls', 'iadatasheet2', 'Adults in Employment', 'No adults in employment in household: With dependent children', '2011')
+					toc = time.time()
+					#print 'toc: ' + str(toc)
+					dt = (toc - tic)
+					print "The %s of %s is: %s" %(result['type'] , result['attribute'], approx_res)
+					#print "The correct result is: " + str(cor_res)
+					print "The err is: " + str(abs(float(approx_res) - float(cor_res)))
+					print "Total time: " + str(dt)
+					print "-----------"
+
+					
+					wd_time[str(param_d)][str(param_w)] = str(dt)
+					wd_error[str(param_d)][str(param_w)] = str(abs(float(approx_res) - float(cor_res)))
+
+		utilities.dict_to_csv("errors.csv", wd_error)
 
 
