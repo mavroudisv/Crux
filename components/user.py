@@ -204,14 +204,14 @@ if __name__ == "__main__":
 		
 		#[0.5, 0.35, 0.25, 0.15, 0.1, 0.05, 0.025, 0.01]:  #, 0.005, 0.001]:
 		
-		for param_d in range(1,3):
+		for param_d in range(1,10):
 			wd_time[str(param_d)] = {}
 			wd_error[str(param_d)] = {}
-			
-			for param_w in range(3,5):
+			print "d: " + str(param_d)
+			for param_w in range(3,70):
 				tic = time.time()
 				#print 'tic: ' + str(tic)
-				
+				print "w: " + str(param_w)	
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.connect((ip, int(port)))
 				data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
@@ -249,6 +249,7 @@ if __name__ == "__main__":
 					wd_time[str(param_d)][str(param_w)] = str(dt)
 					wd_error[str(param_d)][str(param_w)] = str(abs(float(approx_res) - float(cor_res)))
 
+		utilities.dict_to_csv("time.csv", wd_time)
 		utilities.dict_to_csv("errors.csv", wd_error)
 
 

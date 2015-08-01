@@ -67,16 +67,16 @@ def dict_to_csv(filename, dictionary):
 	
 	
 	target.write(" , ")
-	for i in dictionary.keys():
-		for j in dictionary[i].keys():
+	for i in sorted(dictionary.keys()):
+		for j in sorted(dictionary[i].keys()):
 			target.write( j + ", ")
 		break
 	
 	
 	target.write("\n")
-	for i in dictionary.keys():
+	for i in sorted(dictionary.keys()):
 		target.write(i + ", "),
-		for j in dictionary[i].keys():
+		for j in sorted(dictionary[i].keys()):
 			target.write(dictionary[i][j] + ", ")
 		target.write("\n")
 	

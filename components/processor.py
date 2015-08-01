@@ -169,7 +169,6 @@ def concat_sets(value_sets):
 def load_value_set(cont_dict):	
 	ct_values = []	
 	counter = 0
-	print "C"
 	for i in range(len(cont_dict)):              
 		contents = cont_dict[str(i)]                        
 		ct_values.append(Classes.Ct(EcPt.from_binary(binascii.unhexlify(contents['pub']),G), EcPt.from_binary(binascii.unhexlify(contents['a']),G), EcPt.from_binary(binascii.unhexlify(contents['b']),G), Bn.from_hex(contents['k']), Bn.from_hex(contents['m'])))
