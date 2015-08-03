@@ -19,17 +19,35 @@ import operations as op
 
 #Compute Median	
 def median_operation(sk_sum, auths):
+	
+	from numpy.random import laplace   
+	
 	proto = Classes.get_median(sk_sum, min_b = 0, max_b = 1000, steps = 20) #Compute Median
 	plain = None
+	total_noise = 0
 	while True:
 		v = proto.send(plain)
 		if isinstance(v, int):
 			break
 		
 		plain = collective_decryption(v, auths)
+		
+		if conf.DP:
+			#print "sksum:" + str(sk_sum.epsilon)
+			if sk_sum.epsilon != 0 and sk_sum.delta != 0:
+				noise = 0
+				scale = float(sk_sum.d) / float(sk_sum.epsilon)
+				#print sk_sum.d
+				#print sk_sum.epsilon
+				noise = int(round(laplace(0, scale)))
+				#print "noise: " + str(noise)
+				plain += noise
+				total_noise += noise
+			
 		#print "*: " + str(plain)
 
 	#print "Estimated median: " + str(v)
+	#print "Total Noise Added: " + str(total_noise)
 	return str(v)
 
 

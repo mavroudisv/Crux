@@ -148,6 +148,9 @@ if __name__ == "__main__":
 			tmp_w = int(math.ceil(math.e / conf.EPSILON))
 			tmp_d = int(math.ceil(math.log(1.0 / conf.DELTA)))
 
+			#print conf.EPSILON
+			data['contents']['attributes']['epsilon'] = str(conf.EPSILON)
+			data['contents']['attributes']['delta'] = str(conf.DELTA)
 			data['contents']['attributes']['sk_w'] = tmp_w
 			data['contents']['attributes']['sk_d'] = tmp_d
 	
@@ -224,6 +227,8 @@ if __name__ == "__main__":
 				print "Sketch bins: tmp_w " + str(param_w) + " tmp_d " + str(param_d)
 				data['contents']['attributes']['sk_w'] = param_w
 				data['contents']['attributes']['sk_d'] = param_d
+				data['contents']['attributes']['epsilon'] = 0
+				data['contents']['attributes']['delta'] = 0
 
 			
 			

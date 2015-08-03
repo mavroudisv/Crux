@@ -242,10 +242,12 @@ def get_data_from_clients_non_blocking(client_ips, data):
 			
 					tmp_w = int(data['contents']['attributes']['sk_w'])
 					tmp_d = int(data['contents']['attributes']['sk_d'])
-					print tmp_d
+					tmp_delta = float(data['contents']['attributes']['delta'])
+					tmp_epsilon = float(data['contents']['attributes']['epsilon'])
+					#print tmp_epsilon
 					
 					#De-serialize sketch object
-					sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G))
+					sketch = Classes.CountSketchCt(tmp_w, tmp_d, EcPt.from_binary(binascii.unhexlify(contents['vars']['pub']),G), tmp_epsilon, tmp_delta)
 					sketch.load_store_list(tmp_w, tmp_d, contents['store'])
 					#sketch.print_details()
 					elist.append(sketch)

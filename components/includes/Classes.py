@@ -231,9 +231,9 @@ class CountSketchCt(object):
     def epsilondelta(epsilon, delta, pub):
         w = int(math.ceil(math.e / epsilon))
         d = int(math.ceil(math.log(1.0 / delta)))
-        return CountSketchCt(w, d, pub)
+        return CountSketchCt(w, d, pub, epsilon, delta)
 
-    def __init__(self, w, d, pub):
+    def __init__(self, w, d, pub, eps=0, dlt=0):
         """ Initialize a w * d Count Sketch under a public key """
 
         if __debug__:
@@ -242,6 +242,8 @@ class CountSketchCt(object):
 
         self.pub = pub
         self.d, self.w = d, w
+        self.epsilon = eps
+        self.delta = dlt
         
         self.packed = []
         for i in range(d):
@@ -355,14 +357,14 @@ class CountSketchCt(object):
     @staticmethod
     def aggregate(others):
         o0 = others[0]
-        pub, w, d = o0.pub, o0.w, o0.d
+        pub, w, d, epsilon, delta = o0.pub, o0.w, o0.d, o0.epsilon, o0.delta
 
         if __debug__:
             for o in others:
                 assert pub == o.pub
                 assert w == o.w and d == o.d
         
-        cs = CountSketchCt(w, d, pub)
+        cs = CountSketchCt(w, d, pub, epsilon, delta)
 
         for di in range(d):
             for wi in range(w):

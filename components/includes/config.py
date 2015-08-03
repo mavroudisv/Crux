@@ -5,6 +5,7 @@ PROCESSOR_PORT=8888
 
 #Crypto settings
 EC_GROUP = 713
+DP = True
 
 #Sketch settings
 EPSILON = 0.05
