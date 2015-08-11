@@ -74,9 +74,11 @@ if __name__ == "__main__":
 	group.add_argument('--stat', help='Run size tests', nargs='+') #choices=['mean', 'median', 'variance']
 	group.add_argument('--test', action='store_true', help='Verifies that the remote encryption and decryption work properly')
 
-	#Experiments
+
+	#Experiments/Unit Tests
 	group.add_argument('--sketch_size', action='store_true', help='Sketch size vs quality vs time')
 	group.add_argument('--DP', action='store_true', help='DP vs quality')
+	group.add_argument('--mean_test', action='store_true', help='Unit test for mean computation')
 
 	args = parser.parse_args()
 	
@@ -123,8 +125,8 @@ if __name__ == "__main__":
 			tic = time.clock()
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((ip, int(port)))
-			#data = {'request':'stat', 'contents': {'type':'mean', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
-			data = {'request':'stat', 'contents': {'type':'mean', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+			#data = {'request':'stat', 'contents': {'type':'mean', 'dp':'True',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+			data = {'request':'stat', 'contents': {'type':'mean', 'dp':'True', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 			SockExt.send_msg(s, json.dumps(data))
 			print "Request Sent"
 			data = json.loads(SockExt.recv_msg(s))
@@ -141,8 +143,8 @@ if __name__ == "__main__":
 			tic = time.clock()
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((ip, int(port)))
-			#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
-			data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+			#data = {'request':'stat', 'contents': {'type':'median', 'dp':'True',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+			data = {'request':'stat', 'contents': {'type':'median', 'dp':'True',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 			
 			#Compute sketch parameters
 			tmp_w = int(math.ceil(math.e / conf.EPSILON))
@@ -173,7 +175,7 @@ if __name__ == "__main__":
 			tic = time.clock()
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((ip, int(port)))
-			data = {'request':'stat', 'contents': {'type':'variance', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+			data = {'request':'stat', 'contents': {'type':'variance', 'dp':'True', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 			SockExt.send_msg(s, json.dumps(data))
 			print "Request Sent"
 			data = json.loads(SockExt.recv_msg(s))
@@ -217,8 +219,8 @@ if __name__ == "__main__":
 				print "w: " + str(param_w)	
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.connect((ip, int(port)))
-				data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
-				#data = {'request':'stat', 'contents': {'type':'median', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+				data = {'request':'stat', 'contents': {'type':'median', 'dp':'True',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+				#data = {'request':'stat', 'contents': {'type':'median', 'dp':'True', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 				
 				#Compute sketch parameters
 				#tmp_w = int(math.ceil(math.e / param_w))
@@ -258,3 +260,29 @@ if __name__ == "__main__":
 		utilities.dict_to_csv("errors.csv", wd_error)
 
 
+
+	elif args.mean_test:
+		tic = time.clock()
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ip, int(port)))
+		data = {'request':'stat', 'contents': {'type':'mean', 'dp':'False',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':'Adults in Employment', 'column_2':'No adults in employment in household: With dependent children', 'column_3':'2011'}}}
+		#data = {'request':'stat', 'contents': {'type':'mean', 'dp':'False',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
+		
+		SockExt.send_msg(s, json.dumps(data))
+		print "Request Sent"
+		data = json.loads(SockExt.recv_msg(s))
+		print "Response:"
+		result = data['return']
+		
+
+		if result['success']=='True':
+			approx_res = result['value']
+			cor_res = comp_mean('data/data_large.xls', 'iadatasheet2', 'Adults in Employment', 'No adults in employment in household: With dependent children', '2011')
+			toc = time.clock()
+			dt = (toc - tic)
+			if abs(float(approx_res)-float(cor_res))<=0.1:
+				print "Mean accuracy test passed!"
+			else:
+				print "Mean accuracy test failed."
+				print cor_res
+				print approx_res

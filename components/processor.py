@@ -93,8 +93,8 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				from pycallgraph import PyCallGraph
 				from pycallgraph.output import GraphvizOutput
 				from pycallgraph import Config
-				DEPTH = 3
-				config = Config(max_depth=DEPTH)
+
+				config = Config(max_depth=conf.DEPTH)
 				graphviz = GraphvizOutput()
 				graphviz.output_file = conf.PROF_FILE_PROCESSOR + 'png'
 				with PyCallGraph(output=graphviz, config=config):
@@ -119,13 +119,19 @@ def process_request(data, obj):
 	attr_column_2 = attributes['column_2']
 	attr_column_3 = attributes['column_3']
 	
+	#Differential Privacy?
+	if 'dp' in contents:
+		dp = contents['dp']
+	else:
+		dp = True
+	
 	
 	#Run selected operation
 	if (stat_type == 'median'):
 		data['contents']['data_type'] = "sketch"
 		sketches = get_data_from_clients_non_blocking(clients, data) #Gather sketches from clients
 		sk_sum = Classes.CountSketchCt.aggregate(sketches) #Aggregate sketches
-		result = op.median_operation(sk_sum, auths) #Compute median on sum of sketches
+		result = op.median_operation(sk_sum, auths, dp) #Compute median on sum of sketches
 
 	elif (stat_type == 'mean'):
 		data['contents']['data_type'] = "values"
@@ -136,7 +142,7 @@ def process_request(data, obj):
 			for value in vset:
 				elist.append(value)
 		
-		result = op.mean_operation(elist, auths) #Compute mean from cts
+		result = op.mean_operation(elist, auths, dp) #Compute mean from cts
 		
 	elif (stat_type == 'variance'):
 		data['contents']['data_type'] = "values"
@@ -147,7 +153,7 @@ def process_request(data, obj):
 		value_sets = get_data_from_clients_non_blocking(clients, data) #Gather squared values from clients
 		values_sq_lst = concat_sets(value_sets)
 
-		result = op.variance_operation(values_lst, values_sq_lst, auths) #Compute variance from cts		
+		result = op.variance_operation(values_lst, values_sq_lst, auths, dp) #Compute variance from cts		
 		
 	SockExt.send_msg(obj.request, json.dumps({'return':{'success':'True', 'type':stat_type, 'attribute':attr_column_1, 'value':result}}))
 	

@@ -105,6 +105,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			utilities.clean_folder(conf.PROF_FOLDER)
 	
 			if conf.PROFILER == 'cProfiler':
+				print "cProfiler active..."
 				import cProfile
 				import pstats
 				pr = cProfile.Profile()
@@ -121,6 +122,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 				
 				
 			elif conf.PROFILER == 'LineProfiler':
+				print "LineProfiler active..."
 				import line_profiler
 				import pstats
 				import io
@@ -135,11 +137,12 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 
 	
 			elif conf.PROFILER == "viz":
+				print "Vizualization module active..."
 				from pycallgraph import PyCallGraph
 				from pycallgraph.output import GraphvizOutput
 				from pycallgraph import Config
-				DEPTH = 3
-				config = Config(max_depth=DEPTH)
+				
+				config = Config(max_depth=conf.DEPTH)
 				graphviz = GraphvizOutput()
 				graphviz.output_file = conf.PROF_FILE_CLIENT + 'png'
 				with PyCallGraph(output=graphviz, config=config):

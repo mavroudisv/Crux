@@ -30,7 +30,8 @@ MEASUREMENT_MODE_AUTHORITY = False
 MEASUREMENT_MODE_PROCESSOR = False
 MEASUREMENT_MODE_CLIENT = False
 MEASUREMENT_MODE_USER = False
-PROFILER = "cProfiler"
+DEPTH = 1
+PROFILER = "viz"
 
 PROF_FOLDER = "../profiling_results"
 PROF_FILE_PROCESSOR = "../profiling_results/prof_proc."

@@ -18,7 +18,7 @@ import operations as op
 
 
 #Compute Median	
-def median_operation(sk_sum, auths):
+def median_operation(sk_sum, auths, dp):
 	
 	from numpy.random import laplace   
 	
@@ -32,10 +32,11 @@ def median_operation(sk_sum, auths):
 		
 		plain = collective_decryption(v, auths)
 		
-		if conf.DP:
+		if (conf.DP and dp)==True:
 			#print "sksum:" + str(sk_sum.epsilon)
 			if sk_sum.epsilon != 0 and sk_sum.delta != 0:
 				noise = 0
+				print conf.DP and dp
 				scale = float(sk_sum.d) / float(sk_sum.epsilon)
 				#print sk_sum.d
 				#print sk_sum.epsilon
@@ -51,17 +52,24 @@ def median_operation(sk_sum, auths):
 	return str(v)
 
 
-def mean_operation(elist, auths):
+def mean_operation(elist, auths, dp):
 	
 	G = EcGroup(nid=conf.EC_GROUP)
 	esum = Classes.Ct.sum(elist)
 	plain_sum = collective_decryption(esum, auths)
 	
 	mean = float(plain_sum)/float(len(elist))
-	return str(mean)
+	
+	if dp==True:
+		from numpy.random import laplace
+		noise = int(round(laplace(0, scale)))
+	else:
+		noisy_mean=mean
+	
+	return str(noisy_mean)
 
 
-def variance_operation(elist, elist_sq, auths):
+def variance_operation(elist, elist_sq, auths, dp):
 	G = EcGroup(nid=conf.EC_GROUP)
 
 	#E(x^2) = (S(ri^2)/N)
