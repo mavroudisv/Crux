@@ -129,6 +129,7 @@ if __name__ == "__main__":
 			data = {'request':'stat', 'contents': {'type':'mean', 'dp':'True', 'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 			SockExt.send_msg(s, json.dumps(data))
 			print "Request Sent"
+			data['contents']['attributes']['epsilon'] = str(conf.EPSILON)
 			data = json.loads(SockExt.recv_msg(s))
 			print "Response:"
 			result = data['return']
@@ -269,9 +270,9 @@ if __name__ == "__main__":
 		#data = {'request':'stat', 'contents': {'type':'mean', 'dp':'False',  'attributes':{'file':'data/data_large.xls', 'sheet':'iadatasheet2', 'column_1':args.stat[1], 'column_2':args.stat[2], 'column_3':args.stat[3]}}}
 		
 		SockExt.send_msg(s, json.dumps(data))
-		print "Request Sent"
+		#print "Request Sent"
 		data = json.loads(SockExt.recv_msg(s))
-		print "Response:"
+		#print "Response:"
 		result = data['return']
 		
 

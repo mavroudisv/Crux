@@ -32,7 +32,7 @@ def median_operation(sk_sum, auths, dp):
 		
 		plain = collective_decryption(v, auths)
 		
-		if (conf.DP and dp)==True:
+		if (conf.DP and dp):
 			#print "sksum:" + str(sk_sum.epsilon)
 			if sk_sum.epsilon != 0 and sk_sum.delta != 0:
 				noise = 0
@@ -59,10 +59,17 @@ def mean_operation(elist, auths, dp):
 	plain_sum = collective_decryption(esum, auths)
 	
 	mean = float(plain_sum)/float(len(elist))
-	
-	if dp==True:
+
+	if (conf.DP and dp):
+		print "here"
+		#deltaf = 1/clients * 80 (80 is an arbitrary value, which fitted our data though.)
+		d = float(100)/float(len(elist))
+		
 		from numpy.random import laplace
-		noise = int(round(laplace(0, scale)))
+		scale = float(d) / conf.EPSILON
+		noise = laplace(0, scale)
+		noisy_mean = mean + noise
+		#print "noise " + str(noise)
 	else:
 		noisy_mean=mean
 	
@@ -85,7 +92,23 @@ def variance_operation(elist, elist_sq, auths, dp):
 	#print "second: " + str(second)
 
 	variance = first - second
-	return str(variance)
+	
+	if (conf.DP and dp):
+		#deltaf = 1/clients * 80 (80 is an arbitrary value, which fitted our data though.)
+		d = float(200)/float(len(elist))
+		
+		from numpy.random import laplace
+		scale = float(d) / conf.EPSILON
+		noise = laplace(0, scale)
+		print "noise " + str(noise)
+		noisy_var = variance + noise
+		
+	else:
+		noisy_var=variance
+	
+	
+	
+	return str(noisy_var)
 
 
 
