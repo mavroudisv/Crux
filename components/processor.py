@@ -43,7 +43,7 @@ class TCPServerHandler(SocketServer.BaseRequestHandler):
 			
 			if data['request'] == 'ping':
 				contents = data['contents']
-				SockExt.send_msg(self.request, json.dumps({'return': contents['value']}))
+				SockExt.send_msg(self.request, json.dumps({'return': int(contents['value'])+1}))
 			
 			elif data['request'] == 'stat':
 				process_request(data, self)

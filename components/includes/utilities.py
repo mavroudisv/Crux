@@ -14,7 +14,7 @@ def ping(sock):
 		SockExt.send_msg(sock, json.dumps(data))
 		result = json.loads(SockExt.recv_msg(sock))
 	
-		if result['return'] == rand:
+		if result['return'] == rand+1:
 			return True
 		else:
 			return False
