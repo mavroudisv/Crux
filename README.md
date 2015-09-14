@@ -1,7 +1,7 @@
-#Encrypted Statistics for Tor
+#Crux: Privacy-preserving Statistics for Tor
 
 
-TES is a complete system enabling end-users to submit queries for statistics on private data, collected as a stream from the TOR network.
+Crux is a complete system enabling end-users to submit queries for statistics on private data, collected as a stream from the TOR network.
 
 ##Overview
 
@@ -12,16 +12,6 @@ The system currently supports:
 
 it can be further extended for the computation of other statistics.
 
-
-##Components
-
-### Query processor
-
-### Clients
-
-### Encryption Authorities
-
-### End-User Interface
 
 
 ## Usage
@@ -59,5 +49,7 @@ Most of them can be installed using `pip`, but look on their project websites fo
 
 ##Future Improvements
 
+* Support other statistics
 * Support adding new authorities on the fly
 * Django user interface
+* Ephimeral Keys
