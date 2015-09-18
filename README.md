@@ -20,29 +20,29 @@ For a testing setup we need:
 
 1. An Authority
 
-To start the relay we use a terminal command in the form:
+	To start the relay we use a terminal command in the form:
 
-`python authority.py`
-
-
-2. A query processor
+	`python authority.py`
 
 
-To start the relay we use a terminal command in the form:
-
-python processor.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2
+1. A query processor
 
 
-An example would be:
+	To start the relay we use a terminal command in the form:
 
-`python processor.py 127.0.0.1 127.0.0.1`
+	python processor.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2
 
 
-3. A relay
+	An example would be:
 
-To start the relay we use a terminal command in the form:
+	`python processor.py 127.0.0.1 127.0.0.1`
 
-python relay.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2 RELAY_ID NUM_OF_RELAYS
+
+1. A relay
+
+	To start the relay we use a terminal command in the form:
+
+	python relay.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2 RELAY_ID NUM_OF_RELAYS
 
 
 
