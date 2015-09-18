@@ -44,7 +44,7 @@ def recvall(sock, n):
         try:
             data = zlib.decompress((data))
         except Exception as e:
-		    print "Exception while decompressing: " + str(e)
+            print "Exception while decompressing: " + str(e)
 
         #print n
         #print len(data)

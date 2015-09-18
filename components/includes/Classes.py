@@ -186,8 +186,8 @@ class Ct:
                 new_k = self.k.mod_mul( other, o)
                 new_m = self.m.mod_mul( other, o) 
             return Ct(self.pub, new_a, new_b, new_k, new_m)
-			
-			            
+            
+                        
             
 
     def __neg__(self):
@@ -247,7 +247,7 @@ class CountSketchCt(object):
         
         self.packed = []
         for i in range(d):
-			self.packed.append(pack("I", i))
+            self.packed.append(pack("I", i))
         
         #No dont do this...
         #self.store = [ [Ct.enc(pub, 0)] * w for _ in range(d) ]
@@ -257,9 +257,9 @@ class CountSketchCt(object):
 
     def to_JSON(self):
         #'d': 7,
-		#'pub': <petlib.ec.EcPt object at 0x7f4b692c5050>,
-		#'store': [[<includes.Classes.Ct instance at 0x7f4b692c3b48>,
-		#'w': 50}
+        #'pub': <petlib.ec.EcPt object at 0x7f4b692c5050>,
+        #'store': [[<includes.Classes.Ct instance at 0x7f4b692c3b48>,
+        #'w': 50}
 
         variables_dict = {'pub':hexlify(self.pub.export()), 'd':str(self.d), 'w':str(self.w)}     
         
@@ -271,13 +271,13 @@ class CountSketchCt(object):
                 store_dict[i] = json.loads(cell.to_JSON())
                 i += 1
                 
-			
+            
         result_dict = {'vars':variables_dict, 'store':store_dict}
         
         return json.dumps(result_dict)
 
     def load_store_list(self, w, d, store_dict):
-        counter = 0		
+        counter = 0        
         for i in range(d):
             for j in range(w):                
                 contents = store_dict[str(counter)]
@@ -294,7 +294,7 @@ class CountSketchCt(object):
     def print_details(self):
          for i in range(self.d):
              for j in range(self.w):
-				 print self.store[i][j].a           
+                 print self.store[i][j].a           
              print "---------"
 
     def dump(self):
@@ -329,8 +329,8 @@ class CountSketchCt(object):
             self.store[di][h[di] % self.w].self_check()
         except Exception as e:
            print "Exception on insert: ", e
-			
-			
+            
+            
     def estimate(self, item):
         """ Estimate the frequency of one value """
 
@@ -446,7 +446,7 @@ def CountSketchCt_unit_test():
         
         
 def Ct_dec_unit_test():
-    try:	
+    try:    
         G = EcGroup()
         x_1 = G.order().random()
         y_1 = x_1 * G.generator()
