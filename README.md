@@ -49,7 +49,7 @@ For a testing setup we need:
 
 
 
-	An example would be:
+	An example using a dummy dataset would be:
 
 	`python relay.py 127.0.0.1 127.0.0.1 0 1`
 
