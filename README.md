@@ -32,7 +32,7 @@ For a testing setup we need:
 
 	To start the q. processor the terminal command is in the form:
 
-	python processor.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2
+	`python processor.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2`
 
 
 	An example would be:
@@ -44,14 +44,15 @@ For a testing setup we need:
 
 	To start the relay the terminal command is in the form:
 
-	python relay.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2 RELAY_ID NUM_OF_RELAYS
+	`python relay.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2 RELAY_ID NUM_OF_RELAYS`
 
 
 
 
-An example would be:
+	An example would be:
 
-`python relay.py 127.0.0.1 127.0.0.1 0 1`
+	`python relay.py 127.0.0.1 127.0.0.1 0 1`
+
 
 
 When all the above components are loaded, the user script can then be used to submit requests in the form:
@@ -60,7 +61,7 @@ When all the above components are loaded, the user script can then be used to su
 
 an example would be:
 
-`python user.py -s 52.26.142.27 -p 8888 --stat variance "Lone Parents" "Lone parents not in employment" 2011`
+`python user.py -s 127.0.0.1 -p 8888 --stat median "Lone Parents" "Lone parents not in employment" 2011`
 
 
 However, keep in mind that in an actual setup at least 2 (non-actively malicious) relays should be used.
