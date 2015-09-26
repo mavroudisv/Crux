@@ -63,6 +63,8 @@ an example would be:
 `python user.py -s 127.0.0.1 -p 8888 --stat median "Lone Parents" "Lone parents not in employment" 2011`
 
 
+The parameters of the statistic (e.g. "Lone Parents" "Lone parents not in employment" 2011) depend on the specific application/data. The details seen here correspond to our testing dataset.
+
 However, keep in mind that in an actual setup at least 2 (non-actively malicious) relays should be used.
 
 
