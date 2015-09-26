@@ -1,15 +1,14 @@
-#Crux: Privacy-preserving Statistics for Tor
+#Crux in a nutshell
 
 
-Crux is a complete system enabling end-users to submit queries for statistics on private data, collected as a stream from the TOR network.
+Crux is a complete system enabling end-users to submit queries for statistics on private data. It is designed with Tor in mind, but it can be easily extended to work with other systems too.
 
 The system currently supports:
 * Median
 * Mean
 * Variance
 
-it can be further extended for the computation of other statistics.
-
+and other statistics can be added if needed.
 
 
 ## Usage
