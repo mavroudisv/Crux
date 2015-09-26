@@ -53,19 +53,22 @@ For a testing setup we need:
 	`python relay.py 127.0.0.1 127.0.0.1 0 1`
 
 
-
-When all the above components are loaded, the user script can then be used to submit requests in the form:
-
-`python user.py -s "processor_ip" -p "processor_port" --stat "stat_type" "strings" "which specify" "the column in the xls"`
-
-an example would be:
-
-`python user.py -s 127.0.0.1 -p 8888 --stat median "Lone Parents" "Lone parents not in employment" 2011`
+	It should be noted that in its current form the relay component is only able to parse data only from xls files.
 
 
-The parameters of the statistic (e.g. "Lone Parents" "Lone parents not in employment" 2011) depend on the specific application/data. The details seen here correspond to our testing dataset.
 
-However, keep in mind that in an actual setup at least 2 (non-actively malicious) relays should be used.
+1. When all the above components are loaded, the user script can then be used to submit requests in the form:
+
+	`python user.py -s "processor_ip" -p "processor_port" --stat "stat_type" "strings" "which specify" "the column in the xls"`
+
+	an example would be:
+
+	`python user.py -s 127.0.0.1 -p 8888 --stat median "Lone Parents" "Lone parents not in employment" 2011`
+
+
+	The parameters of the statistic (e.g. "Lone Parents" "Lone parents not in employment" 2011) depend on the specific application/data. The details seen here correspond to our testing dataset.
+
+	However, keep in mind that in an actual setup at least 2 (non-actively malicious) relays should be used.
 
 
 ##Requirements
