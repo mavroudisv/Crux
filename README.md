@@ -89,6 +89,7 @@ The following packages are also needed and you should install them if they are n
 * socketServer
 * xlrd
 * binascii
+* bsddb3
 
 Most of them can be installed using `pip`, but look on their project websites for detailed instructions.
 
