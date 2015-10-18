@@ -61,7 +61,6 @@ def mean_operation(elist, auths, dp):
     mean = float(plain_sum)/float(len(elist))
 
     if (conf.DP and dp):
-        print "here"
         #deltaf = 1/relays * 80 (80 is an arbitrary value for our data.)
         d = float(100)/float(len(elist))
         

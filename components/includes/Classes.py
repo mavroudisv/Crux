@@ -7,7 +7,7 @@ import json
 import math
 import binascii
 import traceback
-import bsddb
+import bsddb3 as bsddb
 
 
 from petlib.ec import *
@@ -71,7 +71,7 @@ class Ct:
         except Exception as e:
             o = self.pub.group.order()
             self.self_check()
-            print("Failed to decrypt: %s" % self.m )
+            #print("Failed to decrypt: %s" % self.m )
             raise e
 
 
