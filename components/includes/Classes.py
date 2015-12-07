@@ -8,6 +8,8 @@ import math
 import binascii
 import traceback
 import bsddb3 as bsddb
+import os.path
+import sys
 
 
 from petlib.ec import *
@@ -15,18 +17,16 @@ from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
 import config as conf
+import generate_db as gen
+
 
 
 # Load the precomputed decryption table
-def load_table():
+def load_table():	
     db_i_table = bsddb.btopen(conf.FN_I_TABLE, 'c')
     db_n_table = bsddb.btopen(conf.FN_N_TABLE, 'c')
     
     return db_i_table, db_n_table
-
-
-G = EcGroup(nid=conf.EC_GROUP)
-_table, _n_table = load_table()
 
 
 def bn_sum(bn_list = []):
@@ -36,8 +36,22 @@ def bn_sum(bn_list = []):
     
     return bn_sum
 
-class Ct:
+def solve_dlp(order, base, dlp):
+	
+    start_time = time.time()
+	
+    xs = _table[str(dlp)[:conf.TRUNC_LIMIT]].split(',')
+    
+    for x in xs:
+        if (int(x) * base)==dlp:
+            elapsed_time = time.time() - start_time
+            print elapsed_time
+            return int(x)
+	
+    #return int(_table[str(dlp)])
 
+
+class Ct:
     @staticmethod
     def enc(pub, m):
         """ Produce a ciphertext, from a public key and message """
@@ -67,7 +81,9 @@ class Ct:
         """ Decrypt a ciphertext using a secret key """
         try:
             hm = self.b - x * self.a
-            return int(_table[str(hm)])
+            o = self.pub.group.order()
+            g = self.pub.group.generator()
+            return solve_dlp(o, g, hm)
         except Exception as e:
             o = self.pub.group.order()
             self.self_check()
@@ -473,4 +489,19 @@ def Ct_dec_unit_test():
         
     except Exception:
         return False
+
+
+
+
+
         
+G = EcGroup(nid=conf.EC_GROUP)
+if (not os.path.isfile(conf.FN_I_TABLE)) or (not os.path.isfile(conf.FN_N_TABLE)):
+    print "Precomputation tables not found. Generating...",
+    sys.stdout.flush()
+    gen.generate_dbs()
+    print "Done"
+
+print "Loading precomputation tables...",
+_table, _n_table = load_table()
+print "Done"

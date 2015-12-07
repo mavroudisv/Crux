@@ -18,6 +18,9 @@ TRIES = 5
 #Files
 FN_I_TABLE = 'data/i_table.db'
 FN_N_TABLE = 'data/n_table.db'
+TRUNC_LIMIT = 5
+LOWER_LIMIT = -200000
+UPPER_LIMIT = 2000000
 
 #Debug
 SHOW_LEN = False
