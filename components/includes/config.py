@@ -23,6 +23,7 @@ LOWER_LIMIT = -200000
 UPPER_LIMIT = 2000000
 
 #Debug
+DEBUG_INFO = True
 SHOW_LEN = False
 
 #Optimizations

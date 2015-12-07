@@ -44,8 +44,10 @@ def solve_dlp(order, base, dlp):
     
     for x in xs:
         if (int(x) * base)==dlp:
-            elapsed_time = time.time() - start_time
-            print elapsed_time
+            if conf.DEBUG_INFO:
+                elapsed_time = time.time() - start_time
+                print elapsed_time
+            
             return int(x)
 	
     #return int(_table[str(dlp)])
