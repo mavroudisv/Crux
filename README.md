@@ -90,8 +90,7 @@ Most of them can be installed using `pip`, but look on their project websites fo
 
 ##Notes
 
-	When running the authority for first time the tables of precomputed values will be generated need to be generated. Depending on your hardware specifications this will normally take few minutes.
-	With the default settings, the total size of the database files will be ~300MB, however we are working to reduce this.
+	When running the authority for first time the tables of precomputed values will be generated need to be generated. Depending on your hardware specifications this will normally take few minutes. With the default settings, the total size of the database files will be ~300MB, however we are working to reduce this.
 
 
 ##Future Improvements
