@@ -113,7 +113,7 @@ def load():
 	global priv
 	global pub	
 
-	print "Checking modules..."
+	print "Checking modules...", 
 	if (Classes.unit_tests()):
 		print "Success! Loading..."
 	else:
@@ -123,7 +123,7 @@ def load():
 	priv = G.order().random()
 	pub= priv * G.generator()
 	print "Generated public key is: " + str(pub)
-	listen_on_port(conf.AUTH_PORT)	
+	listen_on_port(conf.AUTH_PORT)
 
 if __name__ == "__main__":
     load()

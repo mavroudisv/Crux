@@ -12,6 +12,7 @@ import os.path
 import sys
 
 
+
 from petlib.ec import *
 from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
@@ -22,9 +23,11 @@ import generate_db as gen
 
 
 # Load the precomputed decryption table
-def load_table():	
-    db_i_table = bsddb.btopen(conf.FN_I_TABLE, 'c')
-    db_n_table = bsddb.btopen(conf.FN_N_TABLE, 'c')
+def load_table(i=conf.FN_I_TABLE, n=conf.FN_N_TABLE):	
+    trunc=conf.TRUNC_LIMIT #This has to match the db
+    cur_path = os.path.dirname(os.path.abspath(__file__)) + "/../" + conf.DB_DIR + "/"
+    db_i_table = bsddb.btopen(cur_path + i, 'c')
+    db_n_table = bsddb.btopen(cur_path + n, 'c')
     
     return db_i_table, db_n_table
 
@@ -37,10 +40,13 @@ def bn_sum(bn_list = []):
     return bn_sum
 
 def solve_dlp(order, base, dlp):
-	
-    start_time = time.time()
-	
-    xs = _table[str(dlp)[:conf.TRUNC_LIMIT]].split(',')
+    
+    #Bruteforce
+    #for i in range(conf.LOWER_LIMIT,conf.UPPER_LIMIT):
+    #    if ((i * base) == dlp): return i
+    
+    start_time = time.time()	
+    xs = _table[str(dlp)[:trunc]].split(',')
     
     for x in xs:
         if (int(x) * base)==dlp:
@@ -442,13 +448,25 @@ def get_median(cs, min_b = 0, max_b = 1000, steps = 20):
             return 
 
 
+def reload_tables(trunc_new, i=conf.FN_I_TABLE, n=conf.FN_N_TABLE):
+    #print "Warning: Remember to set the trunc limit yourself!"
+    global trunc
+    global _table
+    global _n_table
+    
+    #del _table
+    #del _n_table
+    trunc=trunc_new
+    _table, _n_table = load_table(i, n)
+
+
 
 ########Tests#########
 def unit_tests():
     return CountSketchCt_unit_test() and Ct_dec_unit_test()
 
 def CountSketchCt_unit_test():
-    try:
+
         G = EcGroup()
         x = G.order().random()
         y = x * G.generator()
@@ -459,9 +477,7 @@ def CountSketchCt_unit_test():
         est = c.dec(x)
         #assert est == d
         return est == d
-    except Exception as e:
-        return False
-        
+
         
 def Ct_dec_unit_test():
     try:    
@@ -495,13 +511,13 @@ def Ct_dec_unit_test():
 
 
 
-
         
 G = EcGroup(nid=conf.EC_GROUP)
-if (not os.path.isfile(conf.FN_I_TABLE)) or (not os.path.isfile(conf.FN_N_TABLE)):
+cur_path = os.path.dirname(os.path.abspath(__file__)) + "/../" + conf.DB_DIR + "/"
+if (not os.path.isfile(cur_path + conf.FN_I_TABLE)) or (not os.path.isfile(cur_path + conf.FN_N_TABLE)):
     print "Precomputation tables not found. Generating...",
     sys.stdout.flush()
-    gen.generate_dbs()
+    gen.generate_db()
     print "Done"
 
 print "Loading precomputation tables...",

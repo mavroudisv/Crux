@@ -10,7 +10,7 @@ from petlib.bn import Bn
 import config as conf
 
 
-def _make_table(start=conf.LOWER_LIMIT, end=conf.UPPER_LIMIT):
+def _make_table(trunc_limit, start=conf.LOWER_LIMIT, end=conf.UPPER_LIMIT):
     G = EcGroup(nid=713)
     g = G.generator()
     o = G.order()
@@ -19,7 +19,8 @@ def _make_table(start=conf.LOWER_LIMIT, end=conf.UPPER_LIMIT):
     n_table = {}
     ix = start * g
 	
-    trunc_limit = conf.TRUNC_LIMIT
+    print "Generating db with truc: " + str(trunc_limit)
+    #trunc_limit = conf.TRUNC_LIMIT
 	
     for i in range(start, end):
         #i_table[str(ix)] = str(i) #Uncompressed
@@ -43,12 +44,12 @@ def _make_table(start=conf.LOWER_LIMIT, end=conf.UPPER_LIMIT):
  
 
 
-def generate_dbs():
+def generate_dbs(trunc_limit):
     cur_path = os.path.dirname(os.path.abspath(__file__)) + "/../" + conf.DB_DIR + "/"
-    db_i_table = bsddb.btopen(cur_path + conf.FN_I_TABLE, 'c')
-    db_n_table = bsddb.btopen(cur_path + conf.FN_N_TABLE, 'c')
+    db_i_table = bsddb.btopen(cur_path + conf.FN_I_TABLE[:-3] + "_" + str(trunc_limit) + ".db", 'c')
+    db_n_table = bsddb.btopen(cur_path + conf.FN_N_TABLE[:-3] + "_" + str(trunc_limit) + ".db", 'c')
     
-    i_table, n_table = _make_table()
+    i_table, n_table = _make_table(trunc_limit)
     
     db_i_table.update(i_table)
     db_n_table.update(n_table)
@@ -60,3 +61,6 @@ def generate_dbs():
     db_n_table.close()
 
 
+for i in range(1,30):
+	generate_dbs(i)
+	

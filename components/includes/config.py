@@ -16,14 +16,15 @@ DELTA = 0.0005
 TRIES = 5
 
 #Files
-FN_I_TABLE = 'data/i_table.db'
-FN_N_TABLE = 'data/n_table.db'
-TRUNC_LIMIT = 5
+DB_DIR = 'data'
+FN_I_TABLE = 'i_table.db'
+FN_N_TABLE = 'n_table.db'
+TRUNC_LIMIT = 1
 LOWER_LIMIT = -200000
 UPPER_LIMIT = 2000000
 
 #Debug
-DEBUG_INFO = True
+DEBUG_INFO = False
 SHOW_LEN = False
 
 #Optimizations
