@@ -18,7 +18,7 @@ from petlib.ec import EcGroup, EcPt
 from petlib.bn import Bn
 
 import config as conf
-import generate_db as gen
+from generate_db import *
 
 
 
@@ -517,7 +517,7 @@ cur_path = os.path.dirname(os.path.abspath(__file__)) + "/../" + conf.DB_DIR + "
 if (not os.path.isfile(cur_path + conf.FN_I_TABLE)) or (not os.path.isfile(cur_path + conf.FN_N_TABLE)):
     print "Precomputation tables not found. Generating...",
     sys.stdout.flush()
-    gen.generate_db()
+    generate_dbs()
     print "Done"
 
 print "Loading precomputation tables...",
