@@ -98,4 +98,4 @@ Most of them can be installed using `pip`, but look on their project websites fo
 * Support other statistics
 * Support adding new authorities on the fly
 * Django user interface
-* Ephimeral Keys
+~~* Ephimeral Keys~~
