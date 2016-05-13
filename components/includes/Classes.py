@@ -21,6 +21,7 @@ import config as conf
 from generate_db import *
 
 
+trunc = conf.TRUNC_LIMIT #This has to match the db
 
 # Load the precomputed decryption table
 def load_table(i=conf.FN_I_TABLE, n=conf.FN_N_TABLE):	
