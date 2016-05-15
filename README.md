@@ -1,7 +1,7 @@
 #Crux in a nutshell
 
 
-Crux is a privacy-preserving system enabling distributed projects to aggregate and compute statistics on the measurements of their individual nodes.
+Crux is a privacy-preserving system, aiming to provide aggregated statistics for distributed deployments.
 
 More specifically, it is often the case that the statistics collected by the individual nodes of a distributed system contain sensitive information which should not be publicaly released.
 On the other hand, aggregated statistics over the entire network are very useful for administrators, developers, users etc. Crux uses privacy enhancing technologies to compute statistics
