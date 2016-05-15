@@ -44,7 +44,7 @@ For a testing setup we need:
 
 	To start the relay the terminal command is in the form:
 
-	`python relay.py AUTH_IP_1-AUTH_IP_2 RELAY_IP_1-RELAY_IP_2 RELAY_ID NUM_OF_RELAYS`
+	`python relay.py AUTH_IP_1-AUTH_IP_2 PROCESSOR_IP RELAY_ID NUM_OF_RELAYS`
 
 
 
