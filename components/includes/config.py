@@ -19,7 +19,7 @@ TRIES = 5
 DB_DIR = 'data'
 FN_I_TABLE = 'i_table.db'
 FN_N_TABLE = 'n_table.db'
-TRUNC_LIMIT = 5
+TRUNC_LIMIT = 5 #Less results in 
 LOWER_LIMIT = -200000
 UPPER_LIMIT = 2000000
 

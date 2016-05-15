@@ -1,14 +1,22 @@
 #Crux in a nutshell
 
 
-Crux is a complete system enabling end-users to submit queries for statistics on private data. It is designed with Tor in mind, but it can be easily extended to work with other systems too.
+Crux is a privacy-preserving system enabling distributed projects to aggregate and compute statistics on the measurements of their individual nodes.
+
+More specifically, it is often the case that the statistics collected by the individual nodes of a distributed system contain sensitive information which should not be publicaly released.
+On the other hand, aggregated statistics over the entire network are very useful for administrators, developers, users etc. Crux uses privacy enhancing technologies to compute statistics
+for the whole deployment, while it preserves the confidentiality of the individual measurements reported by the nodes.
+
+The novelty of Crux, is that it is not project specific and hence it is an ideal platform for the development of a general purpose privacy-preserving analytics service.
+
 
 The system currently supports:
+* Sum
 * Median
 * Mean
 * Variance
 
-and other statistics can be added if needed.
+we are also working on adding other statistics (requests welcome!).
 
 
 ## Usage
