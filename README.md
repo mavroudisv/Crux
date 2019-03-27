@@ -105,4 +105,4 @@ When running the authority for first time the tables of precomputed values will 
 * Support other statistics
 * Support adding new authorities on the fly
 * Django user interface
-~~* Ephimeral Keys~~
+* ~~Ephimeral Keys~~
