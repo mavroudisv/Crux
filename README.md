@@ -1,4 +1,4 @@
-#Crux in a nutshell
+## Crux in a nutshell
 
 
 Crux is a privacy-preserving system, aiming to provide aggregated statistics for distributed deployments.
@@ -35,8 +35,7 @@ For a testing setup we need:
 
 
 
-1. A query processor
-
+2. A query processor
 
 	To start the query processor the terminal command is in the form:
 
@@ -48,7 +47,7 @@ For a testing setup we need:
 	`python processor.py 127.0.0.1 127.0.0.1`
 
 
-1. A relay
+3. A relay
 
 	To start the relay the terminal command is in the form:
 
@@ -66,7 +65,7 @@ For a testing setup we need:
 
 
 
-1. When all the above components are loaded, the user script can then be used to submit requests in the form:
+4. When all the above components are loaded, the user script can then be used to submit requests in the form:
 
 	`python user.py -s "processor_ip" -p "processor_port" --stat "stat_type" "strings" "which specify" "the column in the xls"`
 
@@ -80,7 +79,7 @@ For a testing setup we need:
 	However, keep in mind that in an actual setup at least 2 (non-actively malicious) relays should be used.
 
 
-##Requirements
+## Requirements
 The project was developed and tested in python 2.7. Please let me know if it works/or not on a different version.
 
 The following packages are also needed and you should install them if they are not already installed on your system:
@@ -96,12 +95,12 @@ The following packages are also needed and you should install them if they are n
 Most of them can be installed using `pip`, but look on their project websites for detailed instructions.
 
 
-##Notes
+## Notes
 
-	When running the authority for first time the tables of precomputed values will be generated need to be generated. Depending on your hardware specifications this will normally take few minutes. With the default settings, the total size of the database files will be ~300MB, however we are working to reduce this.
+When running the authority for first time the tables of precomputed values will be generated need to be generated. Depending on your hardware specifications this will normally take few minutes. With the default settings, the total size of the database files will be ~300MB, however we are working to reduce this.
 
 
-##Future Improvements
+## Future Improvements
 
 * Support other statistics
 * Support adding new authorities on the fly
