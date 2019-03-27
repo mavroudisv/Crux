@@ -1,5 +1,5 @@
-## Crux in a nutshell
 
+## Crux in a nutshell
 
 Crux is a privacy-preserving system, aiming to provide aggregated statistics for distributed deployments.
 
@@ -35,6 +35,7 @@ For a testing setup we need:
 
 
 
+
 2. A query processor
 
 	To start the query processor the terminal command is in the form:
@@ -47,8 +48,8 @@ For a testing setup we need:
 	`python processor.py 127.0.0.1 127.0.0.1`
 
 
-3. A relay
 
+3. A relay
 	To start the relay the terminal command is in the form:
 
 	`python relay.py AUTH_IP_1-AUTH_IP_2 PROCESSOR_IP RELAY_ID NUM_OF_RELAYS`
@@ -62,7 +63,6 @@ For a testing setup we need:
 
 
 	It should be noted that in its current form the relay component is only able to parse data only from xls files.
-
 
 
 4. When all the above components are loaded, the user script can then be used to submit requests in the form:
@@ -100,9 +100,11 @@ Most of them can be installed using `pip`, but look on their project websites fo
 When running the authority for first time the tables of precomputed values will be generated need to be generated. Depending on your hardware specifications this will normally take few minutes. With the default settings, the total size of the database files will be ~300MB, however we are working to reduce this.
 
 
+
 ## Future Improvements
 
 * Support other statistics
 * Support adding new authorities on the fly
 * Django user interface
 * ~~Ephimeral Keys~~
+
